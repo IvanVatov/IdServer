@@ -1,0 +1,56 @@
+# ==================================================================================================
+#           Web Server configuration
+# ==================================================================================================
+# !I recommended to use the server behind reverse proxy
+# Leave empty if you don`t want to listen for HTTP connections
+Port = 80
+
+# Leave empty if you don`t want to listen for HTTPS connections
+SSLPort =
+
+# In order to generate self signed certificate use the following:
+# keytool -keystore keystore.jks -alias yourAlias -genkeypair -keyalg RSA -keysize 2048 -validity 365 -storetype jks
+
+# If you want to use Let's Encrypt certificate export it as p12 and import p12 in jsk with the following commands:
+# openssl pkcs12 -export -in cert1.pem -inkey privkey1.pem -out output.p12 -name your.domain.com -CAfile fullchain1.pem -caname "Let's Encrypt Authority X3" -password pass:yourPass
+# keytool -importkeystore -deststorepass yourPass -destkeypass yourPass -deststoretype jks -srckeystore output.p12 -srcstoretype PKCS12 -srcstorepass yourPass -destkeystore keystore.jks -alias yourAlias
+
+# Fields are required if SSLPort is defined
+# place keystore.jks file in config directory
+KeyStoreFile = keystore.jks
+KeyStorePassword =
+KeyAlias =
+PrivateKeyPassword =
+
+# ==================================================================================================
+#            Database configuration
+# ==================================================================================================
+
+DatabaseHost = 127.0.0.1
+DatabaseName = idserver
+DatabaseUser =
+DatabasePassword =
+DatabaseMaxConnections = 10
+
+# ==================================================================================================
+#                Administration
+# ==================================================================================================
+
+# eg: admin1:password1 admin2:password2 admin3:password3
+AdministrationAccounts =
+
+# if empty, administration is available on all hosts
+AdministrationHost = example.com
+
+# eg: 127.0.0.1 192.168.0.100 10.10.10.100
+AllowedRemoteIPs = 127.0.0.1 192.168.0.100 10.10.10.100
+
+# ==================================================================================================
+#                     oAuth2
+# ==================================================================================================
+
+# Current standard is 2048, !affects only new keys
+JWTSigningKeySize = 2048
+# Signing Algorithm, possible values: RS256, RS384, RS512
+# !changing this value after initial setup will invalidate old issued tokens
+JWTSigningAlgorithm = RS256

@@ -1,0 +1,3 @@
+package app.vatov.idserver.util
+
+const val ALPHA_NUMERIC_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"

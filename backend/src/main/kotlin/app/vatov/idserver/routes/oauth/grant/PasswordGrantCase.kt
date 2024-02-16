@@ -1,0 +1,78 @@
+package app.vatov.idserver.routes.oauth.grant
+
+import app.vatov.idserver.Const
+import app.vatov.idserver.model.ClientPrincipal
+import app.vatov.idserver.model.GrantType
+import app.vatov.idserver.model.Tenant
+import app.vatov.idserver.repository.RefreshTokenRepository
+import app.vatov.idserver.repository.UserRepository
+import app.vatov.idserver.response.ErrorResponse
+import app.vatov.idserver.response.TokenResponse
+import app.vatov.idserver.routes.readParamOrRespondError
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.Parameters
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
+import io.ktor.server.response.respond
+import io.ktor.util.pipeline.PipelineContext
+
+suspend fun PipelineContext<*, ApplicationCall>.passwordGrantCase(tenant: Tenant, principal: ClientPrincipal, params: Parameters, userAgent: String ) {
+
+    if (!principal.settings.grantTypes.contains(GrantType.PASSWORD)) {
+        call.respond(
+            HttpStatusCode.BadRequest,
+            ErrorResponse.UNSUPPORTED_GRANT_TYPE
+        )
+        return
+    }
+
+    val userName =
+        readParamOrRespondError(params, Const.OAuth.USERNAME) ?: return
+    val password =
+        readParamOrRespondError(params, Const.OAuth.PASSWORD) ?: return
+
+    val scopes = (params[Const.OAuth.SCOPE] ?: Const.EMPTY_STRING).split(' ')
+
+    scopes.forEach {
+        if (!principal.settings.scope.contains(it)) {
+            call.respond(
+                HttpStatusCode.BadRequest,
+                ErrorResponse.INVALID_SCOPE
+            )
+            return
+        }
+    }
+
+    val user = UserRepository.getByCredentials(tenant.id, userName, password)
+
+    if (user != null) {
+
+        val token = tenant.makeToken(user, principal, scopes)
+
+        val refreshToken =
+            if (scopes.contains(Const.OpenIdScope.OFFLINE_ACCESS)) {
+                RefreshTokenRepository.create(
+                    tenant.id,
+                    user.id,
+                    principal.clientId,
+                    scopes,
+                    userAgent
+                )
+            } else null
+
+        call.respond(
+            TokenResponse(
+                accessToken = token,
+                tokenType = Const.OAuth.BEARER,
+                expiresIn = principal.settings.tokenExpiration,
+                refreshToken = refreshToken,
+            )
+        )
+    } else {
+        call.respond(
+            HttpStatusCode.BadRequest,
+            ErrorResponse.INVALID_GRAND
+        )
+    }
+    return
+}

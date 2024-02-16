@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Showdown Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/showdown@latest"></script>
+</head>
+<body>
+<div id="content"></div>
+
+<script>
+    // Create a new showdown converter
+    var converter = new showdown.Converter();
+
+    // Load the markdown file
+    fetch('example.md')
+      .then(response => response.text())
+      .then(text => {
+        // Convert the markdown to HTML
+        var html = converter.makeHtml(text);
+
+        // Insert the HTML into the page
+        document.getElementById('content').innerHTML = html;
+      });
+  </script>
+</body>
+</html>
