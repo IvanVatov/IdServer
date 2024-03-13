@@ -150,10 +150,7 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
             }
         }
 
-        builder.withClaim(Const.OpenIdClaim.EMAIL, user.email)
-            .withClaim(Const.OpenIdClaim.NAME, user.name)
-            .withClaim(Const.OpenIdClaim.PICTURE, user.picture)
-            .withExpiresAt(now.plusSeconds(client.settings.tokenExpiration))
+        builder.withExpiresAt(now.plusSeconds(client.settings.tokenExpiration))
             .withNotBefore(now.minusSeconds(5))
 
         return builder.sign(_algorithm)
