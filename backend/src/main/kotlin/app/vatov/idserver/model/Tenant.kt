@@ -82,6 +82,10 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
             .withClaim(Const.OpenIdClaim.APPLICATION, client.application)
             .withClaim(Const.OAuth.SCOPE, scope)
 
+        if (scope.contains(Const.OpenIdScope.ROLES)) {
+            builder.withClaim(Const.OpenIdScope.ROLES, user.role ?: emptyList<String>())
+        }
+
         if (scope.contains(Const.OpenIdScope.PROFILE)) {
             user.name?.let {
                 builder.withClaim(Const.OpenIdClaim.NAME, it)
