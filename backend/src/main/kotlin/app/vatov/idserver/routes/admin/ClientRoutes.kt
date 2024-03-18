@@ -1,6 +1,7 @@
 package app.vatov.idserver.routes.admin
 
 import app.vatov.idserver.IDServer
+import app.vatov.idserver.ext.isAuthorizedAdmin
 import app.vatov.idserver.model.ClientPrincipal
 import app.vatov.idserver.repository.ClientRepository
 import app.vatov.idserver.request.admin.CreateClientRequest
@@ -8,16 +9,16 @@ import app.vatov.idserver.request.admin.DeleteClientRequest
 import app.vatov.idserver.response.ResultResponse
 import app.vatov.idserver.routes.getIntParam
 import app.vatov.idserver.routes.getStringParam
+import app.vatov.idserver.routes.getUserOrRespondError
 import app.vatov.idserver.routes.respondBadRequest
 import app.vatov.idserver.routes.respondNotFound
+import app.vatov.idserver.routes.respondUnauthorized
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
-import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
-import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 
 fun Route.clientRoutes() {
@@ -25,7 +26,15 @@ fun Route.clientRoutes() {
     route("admin/client") {
 
         get {
+            val user = getUserOrRespondError() ?: return@get
+
             val tenantId = getIntParam("tenantId") ?: return@get
+
+            if (!user.isAuthorizedAdmin(tenantId)){
+                respondUnauthorized()
+                return@get
+            }
+
             val clientId = getStringParam("clientId") ?: return@get
 
             ClientRepository.getClientIdForTenantId(tenantId, clientId)?.let {
@@ -37,13 +46,28 @@ fun Route.clientRoutes() {
         }
 
         post("put") {
+
+            val user = getUserOrRespondError() ?: return@post
+
             val client = call.receive<ClientPrincipal>()
+
+            if (!user.isAuthorizedAdmin(client.tenantId)){
+                respondUnauthorized()
+                return@post
+            }
 
             call.respond(ResultResponse(ClientRepository.update(client)))
         }
 
         post("delete") {
+            val user = getUserOrRespondError() ?: return@post
+
             val request = call.receive<DeleteClientRequest>()
+
+            if (!user.isAuthorizedAdmin(request.tenantId)){
+                respondUnauthorized()
+                return@post
+            }
 
             val result = ClientRepository.delete(request.tenantId, request.clientId)
 
@@ -61,7 +85,15 @@ fun Route.clientRoutes() {
     route("admin/client/list") {
 
         get {
+            val user = getUserOrRespondError() ?: return@get
+
             val tenantId = getIntParam("tenantId") ?: return@get
+
+            if (!user.isAuthorizedAdmin(tenantId)){
+                respondUnauthorized()
+                return@get
+            }
+
             call.respond(ClientRepository.getAllForTenantId(tenantId))
         }
     }
@@ -69,8 +101,14 @@ fun Route.clientRoutes() {
     route("admin/client/create") {
 
         post {
+            val user = getUserOrRespondError() ?: return@post
 
             val request = call.receive<CreateClientRequest>()
+
+            if (!user.isAuthorizedAdmin(request.tenantId)){
+                respondUnauthorized()
+                return@post
+            }
 
             if (request.clientId.isBlank() || request.application.isBlank()) {
                 respondBadRequest()

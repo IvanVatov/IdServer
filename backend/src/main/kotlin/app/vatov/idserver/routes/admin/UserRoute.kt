@@ -1,21 +1,20 @@
 package app.vatov.idserver.routes.admin
 
+import app.vatov.idserver.ext.isAuthorizedAdmin
 import app.vatov.idserver.jsonInstance
 import app.vatov.idserver.model.User
-import app.vatov.idserver.model.UserPrincipal
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserRegistrationRequest
 import app.vatov.idserver.request.user.UserUpdateRequest
 import app.vatov.idserver.request.user.validate
-import app.vatov.idserver.response.ErrorResponse
 import app.vatov.idserver.routes.getIntParam
 import app.vatov.idserver.routes.getIntParamOrNull
 import app.vatov.idserver.routes.getStringParam
+import app.vatov.idserver.routes.getUserOrRespondError
 import app.vatov.idserver.routes.respondBadRequest
 import app.vatov.idserver.routes.respondNotFound
-import io.ktor.http.HttpStatusCode
+import app.vatov.idserver.routes.respondUnauthorized
 import io.ktor.server.application.call
-import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -32,20 +31,14 @@ fun Route.adminUsers() {
 
         get {
 
-            val userPrincipleId = call.principal<UserPrincipal>()?.id
-
-            if (userPrincipleId == null) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse.BAD_REQUEST
-                )
-                return@get
-            }
-
-            // todo check for access
-
+            val user = getUserOrRespondError() ?: return@get
 
             val tenantId = getIntParam("tenantId") ?: return@get
+
+            if (!user.isAuthorizedAdmin(tenantId)){
+                respondUnauthorized()
+                return@get
+            }
 
             val size = getIntParamOrNull("size") ?: 100
 
@@ -60,46 +53,53 @@ fun Route.adminUsers() {
     route("admin/user") {
 
         get {
-            val userPrincipleId = call.principal<UserPrincipal>()?.id
-
-            if (userPrincipleId == null) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse.BAD_REQUEST
-                )
-                return@get
-            }
-
-            // todo check for access
-
+            val user = getUserOrRespondError() ?: return@get
 
             val tenantId = getIntParam("tenantId") ?: return@get
 
+            if (!user.isAuthorizedAdmin(tenantId)){
+                respondUnauthorized()
+                return@get
+            }
+
             val userId = getStringParam("userId") ?: return@get
 
-            val user = UserRepository.getUserById(tenantId, userId)
+            val result = UserRepository.getUserById(tenantId, userId)
 
-            if (user == null) {
+            if (result == null) {
                 respondNotFound()
                 return@get
             }
 
-            call.respond(user)
+            call.respond(result)
         }
 
         post {
+            val user = getUserOrRespondError() ?: return@post
+
             val tenantId = getIntParam("tenantId") ?: return@post
+
+            if (!user.isAuthorizedAdmin(tenantId)){
+                respondUnauthorized()
+                return@post
+            }
 
             val userRegistrationRequest = call.receive<UserRegistrationRequest>()
 
-            val user = UserRepository.create(tenantId, userRegistrationRequest)
+            val result = UserRepository.create(tenantId, userRegistrationRequest)
 
-            call.respond(user)
+            call.respond(result)
         }
 
         post("patch") {
+            val user = getUserOrRespondError() ?: return@post
 
             val tenantId = getIntParam("tenantId") ?: return@post
+
+            if (!user.isAuthorizedAdmin(tenantId)){
+                respondUnauthorized()
+                return@post
+            }
 
             val userId = getStringParam("userId") ?: return@post
 
@@ -120,93 +120,93 @@ fun Route.adminUsers() {
                 )
             ) ?: return@post
 
-            val user = UserRepository.getUserById(tenantId, userId)
+            val oldUser = UserRepository.getUserById(tenantId, userId)
                 ?: throw NullPointerException("User cannot be found")
             // TODO: Return not found without exception
 
 
             val updatedUser = User(
-                user.id,
-                user.account,
-                user.createdAt,
+                oldUser.id,
+                oldUser.account,
+                oldUser.createdAt,
                 name = if (removeKeys.contains("name"))
                     null
                 else
-                    request.name ?: user.name,
+                    request.name ?: oldUser.name,
                 givenName = if (removeKeys.contains("given_name"))
                     null
                 else
-                    request.givenName ?: user.givenName,
+                    request.givenName ?: oldUser.givenName,
                 familyName = if (removeKeys.contains("family_name"))
                     null
                 else
-                    request.familyName ?: user.familyName,
+                    request.familyName ?: oldUser.familyName,
                 middleName = if (removeKeys.contains("middle_name"))
                     null
                 else
-                    request.middleName ?: user.middleName,
+                    request.middleName ?: oldUser.middleName,
                 nickname = if (removeKeys.contains("nickname"))
                     null
                 else
-                    request.nickname ?: user.nickname,
+                    request.nickname ?: oldUser.nickname,
                 preferredUsername = if (removeKeys.contains("preferred_username"))
                     null
                 else
-                    request.preferredUsername ?: user.preferredUsername,
+                    request.preferredUsername ?: oldUser.preferredUsername,
                 profile = if (removeKeys.contains("profile"))
                     null
                 else
-                    request.profile ?: user.profile,
+                    request.profile ?: oldUser.profile,
                 picture = if (removeKeys.contains("picture"))
                     null
                 else
-                    request.picture ?: user.picture,
+                    request.picture ?: oldUser.picture,
                 website = if (removeKeys.contains("website"))
                     null
                 else
-                    request.website ?: user.website,
+                    request.website ?: oldUser.website,
                 email = if (removeKeys.contains("email"))
                     null
                 else
-                    request.email ?: user.email,
-                emailVerified = if (request.email == null && user.email == null)
+                    request.email ?: oldUser.email,
+                emailVerified = if (request.email == null && oldUser.email == null)
                     null
                 else
-                    user.emailVerified != null && request.email == null,
+                    oldUser.emailVerified != null && request.email == null,
                 gender = if (removeKeys.contains("gender"))
                     null
                 else
-                    request.gender ?: user.gender,
+                    request.gender ?: oldUser.gender,
                 birthdate = if (removeKeys.contains("birthdate"))
                     null
                 else
-                    request.birthdate ?: user.birthdate,
+                    request.birthdate ?: oldUser.birthdate,
                 zoneInfo = if (removeKeys.contains("zoneinfo"))
                     null
                 else
-                    request.zoneInfo ?: user.zoneInfo,
-                locale = if (removeKeys.contains("locale")) null else request.locale ?: user.locale,
+                    request.zoneInfo ?: oldUser.zoneInfo,
+                locale = if (removeKeys.contains("locale")) null else request.locale ?: oldUser.locale,
                 phoneNumber = if (removeKeys.contains("phone_number")) null else request.phoneNumber
-                    ?: user.phoneNumber,
-                phoneNumberVerified = if (request.phoneNumber == null && user.phoneNumber == null)
+                    ?: oldUser.phoneNumber,
+                phoneNumberVerified = if (request.phoneNumber == null && oldUser.phoneNumber == null)
                     null
                 else
-                    user.phoneNumberVerified != null && request.phoneNumber == null,
+                    oldUser.phoneNumberVerified != null && request.phoneNumber == null,
                 address = if (removeKeys.contains("address")) null else request.address
-                    ?: user.address,
+                    ?: oldUser.address,
                 Instant.now(),
                 role = if (removeKeys.contains("role"))
                     null
                 else
-                    request.role ?: user.role,
+                    request.role ?: oldUser.role,
                 userData = if (removeKeys.contains("user_data"))
                     null
                 else
-                    request.userData ?: user.userData,
+                    request.userData ?: oldUser.userData,
                 serverData = if (removeKeys.contains("server_data"))
                     null
                 else
-                    request.serverData ?: user.serverData
+                    request.serverData ?: oldUser.serverData
             )
 
             val result = UserRepository.updateUser(
