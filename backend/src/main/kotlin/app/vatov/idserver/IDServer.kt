@@ -49,4 +49,8 @@ object IDServer {
     fun getAllTenants(): List<Tenant> {
         return TENANT_MAP_ID.values.toList()
     }
+
+    fun getTenants(ids: List<Int>): List<Tenant> {
+        return TENANT_MAP_ID.values.filter { it.id in ids }
+    }
 }

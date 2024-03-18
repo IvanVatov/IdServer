@@ -74,6 +74,13 @@ suspend fun PipelineContext<*, ApplicationCall>.respondBadRequest() {
     )
 }
 
+suspend fun PipelineContext<*, ApplicationCall>.respondUnauthorized() {
+    call.respond(
+        HttpStatusCode.Unauthorized,
+        ErrorResponse.UNAUTHORIZED
+    )
+}
+
 suspend fun PipelineContext<*, ApplicationCall>.getIntParam(key: String): Int? {
 
     val value = getIntParamOrNull(key)
