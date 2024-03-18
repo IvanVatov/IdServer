@@ -17,9 +17,12 @@ import app.vatov.idserver.routes.user.userChangePassword
 import app.vatov.idserver.routes.user.userRegister
 import app.vatov.idserver.routes.user.userUpdate
 import app.vatov.idserver.routes.user.userWhoAmI
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
 import io.ktor.server.http.content.staticFiles
+import io.ktor.server.request.host
+import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 import java.io.File
 
@@ -61,7 +64,16 @@ fun Application.applicationRoute() {
             "/admin", File(
                 Configuration.FLUTTER_ADMINISTRATION_FILES_LOCATION
             ), index = "index.html"
-        )
+        ) {
+            modify { _, applicationCall ->
+                if (Configuration.ADMINISTRATION_HOST.isNotEmpty() && Configuration.ADMINISTRATION_HOST != applicationCall.request.host()) {
+                    applicationCall.respond(
+                        HttpStatusCode.NotFound,
+                        String()
+                    )
+                }
+            }
+        }
 
         staticFiles("/static", File("./static"))
     }

@@ -82,6 +82,10 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
             .withClaim(Const.OpenIdClaim.APPLICATION, client.application)
             .withClaim(Const.OAuth.SCOPE, scope)
 
+        if (scope.contains(Const.OpenIdScope.ROLES)) {
+            builder.withClaim(Const.OpenIdScope.ROLES, user.role ?: emptyList<String>())
+        }
+
         if (scope.contains(Const.OpenIdScope.PROFILE)) {
             user.name?.let {
                 builder.withClaim(Const.OpenIdClaim.NAME, it)
@@ -150,10 +154,7 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
             }
         }
 
-        builder.withClaim(Const.OpenIdClaim.EMAIL, user.email)
-            .withClaim(Const.OpenIdClaim.NAME, user.name)
-            .withClaim(Const.OpenIdClaim.PICTURE, user.picture)
-            .withExpiresAt(now.plusSeconds(client.settings.tokenExpiration))
+        builder.withExpiresAt(now.plusSeconds(client.settings.tokenExpiration))
             .withNotBefore(now.minusSeconds(5))
 
         return builder.sign(_algorithm)

@@ -21,6 +21,8 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.host
 import io.ktor.server.response.respond
 import io.ktor.server.velocity.Velocity
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.serializer
 import org.slf4j.LoggerFactory
 import java.net.URL
 
@@ -129,7 +131,16 @@ fun Application.webServerModule(testing: Boolean = false) {
             validate { credential ->
                 UserPrincipal(
                     credential.payload.subject,
-                    null
+                    credential[Const.OAuth.SCOPE]?.let {
+                        jsonInstance.decodeFromString(
+                            ListSerializer(String.serializer()), it
+                        )
+                    } ?: emptyList(),
+                    credential[Const.OpenIdScope.ROLES]?.let {
+                        jsonInstance.decodeFromString(
+                            ListSerializer(String.serializer()), it
+                        )
+                    } ?: emptyList()
                 )
             }
         }
@@ -144,7 +155,16 @@ fun Application.webServerModule(testing: Boolean = false) {
             validate { credential ->
                 UserPrincipal(
                     credential.payload.subject,
-                    null
+                    credential[Const.OAuth.SCOPE]?.let {
+                        jsonInstance.decodeFromString(
+                            ListSerializer(String.serializer()), it
+                        )
+                    } ?: emptyList(),
+                    credential[Const.OpenIdScope.ROLES]?.let {
+                        jsonInstance.decodeFromString(
+                            ListSerializer(String.serializer()), it
+                        )
+                    } ?: emptyList()
                 )
             }
         }
