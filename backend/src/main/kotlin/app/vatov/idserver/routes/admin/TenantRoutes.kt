@@ -17,7 +17,7 @@ import app.vatov.idserver.response.ResultResponse
 import app.vatov.idserver.routes.getIntParam
 import app.vatov.idserver.routes.getUserOrRespondError
 import app.vatov.idserver.routes.respondNotFound
-import app.vatov.idserver.routes.respondUnauthorized
+import app.vatov.idserver.routes.respondForbidden
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
@@ -36,7 +36,7 @@ fun Route.tenantRoutes() {
             val user = getUserOrRespondError() ?: return@post
 
             if (!user.role.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
-                respondUnauthorized()
+                respondForbidden()
                 return@post
             }
 
@@ -70,7 +70,7 @@ fun Route.tenantRoutes() {
             val user = getUserOrRespondError() ?: return@post
 
             if (!user.role.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
-                respondUnauthorized()
+                respondForbidden()
                 return@post
             }
 
@@ -89,7 +89,7 @@ fun Route.tenantRoutes() {
             val tenantId = getIntParam("tenantId") ?: return@get
 
             if (!user.isAuthorizedAdmin(tenantId)) {
-                respondUnauthorized()
+                respondForbidden()
                 return@get
             }
 
@@ -115,7 +115,7 @@ fun Route.tenantRoutes() {
             val request = call.receive<RotateKeyRequest>()
 
             if (!user.isAuthorizedAdmin(request.tenantId)) {
-                respondUnauthorized()
+                respondForbidden()
                 return@post
             }
 
@@ -139,7 +139,7 @@ fun Route.tenantRoutes() {
             val request = call.receive<DeleteKeyRequest>()
 
             if (!user.isAuthorizedAdmin(request.tenantId)) {
-                respondUnauthorized()
+                respondForbidden()
                 return@post
             }
 

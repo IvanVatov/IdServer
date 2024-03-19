@@ -13,7 +13,7 @@ import app.vatov.idserver.routes.getStringParam
 import app.vatov.idserver.routes.getUserOrRespondError
 import app.vatov.idserver.routes.respondBadRequest
 import app.vatov.idserver.routes.respondNotFound
-import app.vatov.idserver.routes.respondUnauthorized
+import app.vatov.idserver.routes.respondForbidden
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -36,7 +36,7 @@ fun Route.adminUsers() {
             val tenantId = getIntParam("tenantId") ?: return@get
 
             if (!user.isAuthorizedAdmin(tenantId)){
-                respondUnauthorized()
+                respondForbidden()
                 return@get
             }
 
@@ -58,7 +58,7 @@ fun Route.adminUsers() {
             val tenantId = getIntParam("tenantId") ?: return@get
 
             if (!user.isAuthorizedAdmin(tenantId)){
-                respondUnauthorized()
+                respondForbidden()
                 return@get
             }
 
@@ -80,7 +80,7 @@ fun Route.adminUsers() {
             val tenantId = getIntParam("tenantId") ?: return@post
 
             if (!user.isAuthorizedAdmin(tenantId)){
-                respondUnauthorized()
+                respondForbidden()
                 return@post
             }
 
@@ -97,7 +97,7 @@ fun Route.adminUsers() {
             val tenantId = getIntParam("tenantId") ?: return@post
 
             if (!user.isAuthorizedAdmin(tenantId)){
-                respondUnauthorized()
+                respondForbidden()
                 return@post
             }
 

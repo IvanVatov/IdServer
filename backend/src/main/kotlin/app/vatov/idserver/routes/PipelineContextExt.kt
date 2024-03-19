@@ -74,10 +74,10 @@ suspend fun PipelineContext<*, ApplicationCall>.respondBadRequest() {
     )
 }
 
-suspend fun PipelineContext<*, ApplicationCall>.respondUnauthorized() {
+suspend fun PipelineContext<*, ApplicationCall>.respondForbidden() {
     call.respond(
-        HttpStatusCode.Unauthorized,
-        ErrorResponse.UNAUTHORIZED
+        HttpStatusCode.Forbidden,
+        ErrorResponse.FORBIDDEN
     )
 }
 
