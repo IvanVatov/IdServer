@@ -105,7 +105,7 @@ distributions {
             from("workingDir/templates") {
                 into("templates")
             }
-            from("workingDir/startScripts")
+            from("dist/startScripts")
             from("../frontend/build/web") {
                 into("admin")
             }

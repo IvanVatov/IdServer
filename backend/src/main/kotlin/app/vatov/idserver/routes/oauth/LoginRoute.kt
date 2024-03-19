@@ -28,6 +28,8 @@ fun Routing.login() {
 
         get {
 
+            val tenant = getTenantOrRespondError() ?: return@get
+
             val params = call.request.queryParameters
 
             val code = params["code"] ?: ""
@@ -36,7 +38,7 @@ fun Routing.login() {
 
             // we can show what is requested to the user
 
-            call.respond(VelocityContent("login.html", mapOf("code" to code, "nonce" to nonce)))
+            call.respond(VelocityContent("${tenant.id}/login.html", mapOf("code" to code, "nonce" to nonce)))
         }
 
         post {

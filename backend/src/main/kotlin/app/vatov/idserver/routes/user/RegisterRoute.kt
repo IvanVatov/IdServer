@@ -22,9 +22,11 @@ fun Routing.userRegister() {
     route("user/register") {
 
         get {
+            val tenant = getTenantOrRespondError() ?: return@get
+
             call.respond(
                 VelocityContent(
-                    "register.html", mapOf(
+                    "${tenant.id}/register.html", mapOf(
                         "account" to "",
                         "password" to ""
                     )
@@ -96,11 +98,11 @@ fun Routing.userRegister() {
 
                     if (user != null) {
                         // TODO return success response
-                        call.respond(VelocityContent("registration_success.html", emptyMap()))
+                        call.respond(VelocityContent("${tenant.id}/registration_success.html", emptyMap()))
                         return@post
                     }
 
-                    call.respond(VelocityContent("register.html", map))
+                    call.respond(VelocityContent("${tenant.id}/register.html", map))
                 }
             }
         }

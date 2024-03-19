@@ -14,3 +14,7 @@ gen/**
 build/
 bin/
 local.properties
+
+workingDir/templates/*
+!workingDir/templates/default/
+!workingDir/templates/1/
