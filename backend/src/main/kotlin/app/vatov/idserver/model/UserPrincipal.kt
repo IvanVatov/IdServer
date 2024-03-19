@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 class UserPrincipal(
     val id: String,
     val scope: List<String>,
-    val role: List<String>
+    val roles: List<String>
 ) : Principal

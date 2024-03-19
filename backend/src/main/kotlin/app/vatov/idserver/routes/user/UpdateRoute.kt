@@ -133,10 +133,10 @@ fun Route.userUpdate() {
                     user.phoneNumberVerified != null && request.phoneNumber == null,
                 address = if (removeKeys.contains("address")) null else request.address ?: user.address,
                 Instant.now(),
-                role = if (removeKeys.contains("role"))
+                roles = if (removeKeys.contains("roles")) // TODO: roles should not be able to be changed from here
                     null
                 else
-                    request.role ?: user.role,
+                    request.roles ?: user.roles,
                 userData
             )
 

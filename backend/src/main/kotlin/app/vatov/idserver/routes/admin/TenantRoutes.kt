@@ -35,7 +35,7 @@ fun Route.tenantRoutes() {
 
             val user = getUserOrRespondError() ?: return@post
 
-            if (!user.role.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
+            if (!user.roles.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
                 respondForbidden()
                 return@post
             }
@@ -58,7 +58,7 @@ fun Route.tenantRoutes() {
         get("list") {
             val user = getUserOrRespondError() ?: return@get
 
-            if (user.role.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
+            if (user.roles.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
                 call.respond(IDServer.getAllTenants())
                 return@get
             }
@@ -69,7 +69,7 @@ fun Route.tenantRoutes() {
         post("delete") {
             val user = getUserOrRespondError() ?: return@post
 
-            if (!user.role.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
+            if (!user.roles.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
                 respondForbidden()
                 return@post
             }

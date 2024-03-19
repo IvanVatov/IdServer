@@ -195,10 +195,10 @@ fun Route.adminUsers() {
                 address = if (removeKeys.contains("address")) null else request.address
                     ?: oldUser.address,
                 Instant.now(),
-                role = if (removeKeys.contains("role"))
+                roles = if (removeKeys.contains("roles"))
                     null
                 else
-                    request.role ?: oldUser.role,
+                    request.roles ?: oldUser.roles,
                 userData = if (removeKeys.contains("user_data"))
                     null
                 else

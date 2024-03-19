@@ -38,7 +38,7 @@ class UserUpdateRequest(
     @SerialName("phone_number")
     val phoneNumber: String? = null,
     val address: String? = null,
-    val role: List<String>? = null,
+    val roles: List<String>? = null,
     @SerialName("user_data")
     val userData: Map<String, @Serializable(with = MetadataSerializer::class) Any?>? = null,
     @SerialName("server_data")

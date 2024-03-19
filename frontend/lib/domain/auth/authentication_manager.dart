@@ -118,7 +118,7 @@ class AuthenticationManager {
           AuthConstants.keyGrantType: AuthConstants.keyPassword,
           AuthConstants.keyUserName: credentials.first,
           AuthConstants.keyPassword: credentials.second,
-          AuthConstants.keyScope: "tenant_admin offline_access"
+          AuthConstants.keyScope: "roles offline_access"
         },
         options: Options(headers: {
           AuthConstants.keyAuthorization: "${AuthConstants.keyBasic} ${base64Encode(utf8.encode("$_client:$_secret"))}"

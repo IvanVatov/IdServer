@@ -46,7 +46,7 @@ object UserRepository {
                 email = request.email,
                 createdAt = createdAt,
                 updatedAt = createdAt,
-                role = defaultRole
+                roles = defaultRole
             )
         }
         throw Exception("Couldn't store the user account")

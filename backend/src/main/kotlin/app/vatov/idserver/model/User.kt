@@ -48,7 +48,7 @@ data class User(
     @SerialName("updated_at")
     @Serializable(with = Iso8601InstantSerializer::class)
     val updatedAt: Instant,
-    val role: List<String>?,
+    val roles: List<String>?,
     @SerialName("user_data")
     val userData: Map<String, @Serializable(with = MetadataSerializer::class) Any?>? = null,
     @SerialName("server_data")

@@ -101,7 +101,6 @@ object Const {
         const val TENANT_ID = 1
         const val CLIENT_ID = "adminClient"
         const val CLIENT_SECRET = "adminSecret"
-        const val TENANT_ADMIN_SCOPE = "tenant_admin"
         const val SUPER_ADMIN_ROLE = "super-admin"
         const val TENANT_ADMIN_ROLE_PREFIX = "admin-"
     }

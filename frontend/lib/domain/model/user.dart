@@ -41,7 +41,7 @@ class User {
   @JsonKey(name: "updated_at")
   @DateTimeConverter()
   DateTime updatedAt;
-  List<String>? role;
+  List<String>? roles;
   @JsonKey(name: "user_data")
   Map<String, dynamic>? userData;
   @JsonKey(name: "server_data")
@@ -70,7 +70,7 @@ class User {
       this.phoneNumberVerified,
       this.address,
       this.updatedAt,
-      this.role,
+      this.roles,
       this.userData,
       this.serverData);
 
