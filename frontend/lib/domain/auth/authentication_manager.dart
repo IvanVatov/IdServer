@@ -21,7 +21,8 @@ class AuthenticationManager {
   final Dio _refreshDio = Dio();
   final Dio client = Dio();
 
-  AuthenticationManager(this._tokenEndPoint, this._client, this._secret, this._isAuthenticatedCallback) {
+  AuthenticationManager(this._tokenEndPoint, this._client, this._secret,
+      this._isAuthenticatedCallback) {
     if (!kIsWeb && kDebugMode) {
       _refreshDio.httpClientAdapter = IOHttpClientAdapter(createHttpClient: () {
         final client = HttpClient();
@@ -49,13 +50,14 @@ class AuthenticationManager {
   void _configure() {
     client.interceptors.clear();
 
-    client.interceptors
-        .add(QueuedInterceptorsWrapper(onRequest: (RequestOptions options, RequestInterceptorHandler handler) async {
+    client.interceptors.add(QueuedInterceptorsWrapper(onRequest:
+        (RequestOptions options, RequestInterceptorHandler handler) async {
       // In memory accessToken
       final mToken = _token;
 
       if (mToken != null && !mToken.isExpired) {
-        options.headers[AuthConstants.keyAuthorization] = "${AuthConstants.keyBearer} ${mToken.accessToken}";
+        options.headers[AuthConstants.keyAuthorization] =
+            "${AuthConstants.keyBearer} ${mToken.accessToken}";
         return handler.next(options);
       }
 
@@ -64,7 +66,8 @@ class AuthenticationManager {
         final Token? mRefreshedToken = await tryRefresh();
 
         if (mRefreshedToken != null) {
-          options.headers[AuthConstants.keyAuthorization] = "${AuthConstants.keyBearer} ${mRefreshedToken.accessToken}";
+          options.headers[AuthConstants.keyAuthorization] =
+              "${AuthConstants.keyBearer} ${mRefreshedToken.accessToken}";
           return handler.next(options);
         }
       } catch (e) {
@@ -73,10 +76,12 @@ class AuthenticationManager {
         if (e is DioException) {
           handler.reject(e);
         } else {
-          return handler.reject(DioException(requestOptions: options, error: e));
+          return handler
+              .reject(DioException(requestOptions: options, error: e));
         }
       }
-    }, onError: (final DioException error, ErrorInterceptorHandler handler) async {
+    }, onError:
+        (final DioException error, ErrorInterceptorHandler handler) async {
       if (error.response?.statusCode == 401) {
         _token = null;
         // Stored refreshToken
@@ -99,7 +104,8 @@ class AuthenticationManager {
           if (e is DioException) {
             return handler.reject(e);
           } else {
-            return handler.reject(DioException(requestOptions: RequestOptions(), error: e));
+            return handler.reject(
+                DioException(requestOptions: RequestOptions(), error: e));
           }
         }
       }
@@ -121,7 +127,8 @@ class AuthenticationManager {
           AuthConstants.keyScope: "roles offline_access"
         },
         options: Options(headers: {
-          AuthConstants.keyAuthorization: "${AuthConstants.keyBasic} ${base64Encode(utf8.encode("$_client:$_secret"))}"
+          AuthConstants.keyAuthorization:
+              "${AuthConstants.keyBasic} ${base64Encode(utf8.encode("$_client:$_secret"))}"
         }, contentType: Headers.formUrlEncodedContentType));
 
     token = Token.fromJson(tokenResponse.data);
@@ -129,7 +136,7 @@ class AuthenticationManager {
     _isAuthenticatedCallback(true);
 
     if (token.refreshToken != null) {
-      _writeRefreshToken(token.refreshToken!);
+      await _writeRefreshToken(token.refreshToken!);
     }
 
     _token = token;
@@ -155,7 +162,7 @@ class AuthenticationManager {
 
         final String? mRefreshToken = token.refreshToken;
         if (mRefreshToken != null) {
-          _writeRefreshToken(mRefreshToken);
+         await _writeRefreshToken(mRefreshToken);
         }
 
         _token = token;
@@ -166,9 +173,10 @@ class AuthenticationManager {
       } catch (e) {
         if (e is DioException && e.response?.statusCode == 400) {
           // clear refresh token
-          _clearRefreshToken();
+          await _clearRefreshToken();
+        } else {
+          rethrow;
         }
-        rethrow;
       }
     }
     _isAuthenticatedCallback(false);
@@ -185,8 +193,9 @@ class AuthenticationManager {
     return await _storage.read(key: AuthConstants.keyRefreshTokenStoreKey);
   }
 
-  void _writeRefreshToken(String refreshToken) {
-    _storage.write(key: AuthConstants.keyRefreshTokenStoreKey, value: refreshToken);
+  Future<void> _writeRefreshToken(String refreshToken) async {
+    await _storage.write(
+        key: AuthConstants.keyRefreshTokenStoreKey, value: refreshToken);
   }
 
   Future<void> _clearRefreshToken() async {
