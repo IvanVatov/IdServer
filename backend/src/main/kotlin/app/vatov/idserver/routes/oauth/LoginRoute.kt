@@ -2,8 +2,7 @@ package app.vatov.idserver.routes.oauth
 
 import app.vatov.idserver.model.AuthorizationInfoWrapper
 import app.vatov.idserver.repository.UserRepository
-import app.vatov.idserver.routes.getTenantOrRespondError
-import app.vatov.idserver.util.createShortUUID
+import app.vatov.idserver.routes.getTenant
 import app.vatov.idserver.util.generateRandomString
 import io.ktor.http.Parameters
 import io.ktor.http.URLBuilder
@@ -28,7 +27,7 @@ fun Routing.login() {
 
         get {
 
-            val tenant = getTenantOrRespondError() ?: return@get
+            val tenant = getTenant()
 
             val params = call.request.queryParameters
 
@@ -42,7 +41,7 @@ fun Routing.login() {
         }
 
         post {
-            val tenant = getTenantOrRespondError() ?: return@post
+            val tenant = getTenant()
 
             val params = call.receiveParameters()
 
@@ -66,7 +65,7 @@ fun Routing.login() {
                 return@post
             }
 
-            val client = tenant.getClient(authorizationInfo.clientId) ?: return@post
+            val client = tenant.getClient(authorizationInfo.clientId)
 
             val code = generateRandomString()
 

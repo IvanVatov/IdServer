@@ -1,5 +1,6 @@
 package app.vatov.idserver
 
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.UserPrincipal
 import app.vatov.idserver.response.ErrorResponse
 import app.vatov.idserver.routes.applicationRoute
@@ -34,22 +35,27 @@ fun Application.webServerModule(testing: Boolean = false) {
     }
 
     install(StatusPages) {
+        exception<IdServerException> { call, cause ->
+            call.respond(cause.statusCode, cause.errorResponse)
+        }
         exception<Throwable> { call, cause ->
-
-            _LOG.error("webServerModule", cause)
-
             when (cause) {
                 is BadRequestException ->
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ErrorResponse.BAD_REQUEST
+                        ErrorResponse("bad_request", "Invalid request.")
                     )
 
-                else ->
+                else -> {
+                    _LOG.error("webServerModule", cause)
                     call.respond(
                         HttpStatusCode.InternalServerError,
-                        ErrorResponse.INTERNAL_SERVER_ERROR
+                        ErrorResponse(
+                            "internal_server_error",
+                            "Something bad happened on the server."
+                        )
                     )
+                }
             }
         }
     }
@@ -62,23 +68,10 @@ fun Application.webServerModule(testing: Boolean = false) {
 
                 val tenant = IDServer.getTenant(host)
 
-                if (tenant == null) {
-
-                    this.respond(
-                        HttpStatusCode.NotFound,
-                        ErrorResponse.NOT_FOUND
-                    )
-                    return@validate null
-                }
-
                 val client = tenant.getClient(credentials.name)
 
-                if (client == null || client.clientSecret != credentials.password) {
-                    this.respond(
-                        HttpStatusCode.NotFound,
-                        ErrorResponse.INVALID_CLIENT
-                    )
-                    return@validate null
+                if (client.clientSecret != credentials.password) {
+                    throw IdServerException.INVALID_CLIENT
                 }
 
                 client
@@ -89,32 +82,15 @@ fun Application.webServerModule(testing: Boolean = false) {
             validate { credentials ->
 
                 if (Configuration.ADMINISTRATION_HOST.isNotEmpty() && Configuration.ADMINISTRATION_HOST != this.request.host()) {
-                    this.respond(
-                        HttpStatusCode.NotFound,
-                        String()
-                    )
-                    return@validate null
+                    throw IdServerException.NOT_FOUND
                 }
 
                 val tenant = IDServer.getTenant(Const.Administration.TENANT_ID)
 
-                if (tenant == null) {
-
-                    this.respond(
-                        HttpStatusCode.NotFound,
-                        ErrorResponse.NOT_FOUND
-                    )
-                    return@validate null
-                }
-
                 val client = tenant.getClient(credentials.name)
 
-                if (client == null || client.clientSecret != credentials.password) {
-                    this.respond(
-                        HttpStatusCode.NotFound,
-                        ErrorResponse.INVALID_CLIENT
-                    )
-                    return@validate null
+                if (client.clientSecret != credentials.password) {
+                   throw IdServerException.INVALID_CLIENT
                 }
 
                 client
@@ -123,7 +99,7 @@ fun Application.webServerModule(testing: Boolean = false) {
 
         jwt(Const.AuthName.ADMINISTRATION_BEARER) {
             verifier {
-                IDServer.getTenant(Const.Administration.TENANT_ID)?.jwtVerifier
+                IDServer.getTenant(Const.Administration.TENANT_ID).jwtVerifier
             }
 
             validate { credential ->
@@ -143,7 +119,7 @@ fun Application.webServerModule(testing: Boolean = false) {
             verifier {
                 val token = JWT.decode((it as? HttpAuthHeader.Single)?.blob)
                 val host = URL(token.issuer).host
-                IDServer.getTenant(host)?.jwtVerifier
+                IDServer.getTenant(host).jwtVerifier
             }
 
             validate { credential ->

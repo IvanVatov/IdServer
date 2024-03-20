@@ -2,6 +2,7 @@ package app.vatov.idserver.repository
 
 import app.vatov.idserver.Const
 import app.vatov.idserver.database.UserTable
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.User
 import app.vatov.idserver.request.user.UserRegistrationRequest
 import app.vatov.idserver.util.createShortUUID
@@ -71,16 +72,23 @@ object UserRepository {
         return UserTable.getUserByAccountAndPassword(tenantId, userName, hashSHA256(password))
     }
 
-    fun getUserById(tenantId: Int, userId: String): User? {
+    @Throws(IdServerException::class)
+    fun getUserById(tenantId: Int, userId: String): User {
 
-        return UserTable.getByUserId(tenantId, userId)
+        return UserTable.getByUserId(tenantId, userId) ?: throw IdServerException.NOT_FOUND
     }
 
     fun updateUser(tenantId: Int, user: User): Int? {
         return UserTable.updateUser(tenantId, user)
     }
 
-    fun getUsers(tenantId: Int, size: Int, skip: Int, by: Int? = null, term: String? = null): List<User> {
+    fun getUsers(
+        tenantId: Int,
+        size: Int,
+        skip: Int,
+        by: Int? = null,
+        term: String? = null
+    ): List<User> {
 
 
         return UserTable.getUsers(tenantId, size, skip, by, term)

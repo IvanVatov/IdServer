@@ -1,5 +1,6 @@
 package app.vatov.idserver
 
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.Tenant
 import app.vatov.idserver.repository.TenantRepository
 import java.util.TreeMap
@@ -37,13 +38,13 @@ object IDServer {
             TENANT_MAP_HOST.remove(it.host)
         }
     }
-
-    fun getTenant(id: Int): Tenant? {
-        return TENANT_MAP_ID[id]
+    @Throws(IdServerException::class)
+    fun getTenant(id: Int): Tenant {
+        return TENANT_MAP_ID[id] ?: throw IdServerException.NOT_FOUND
     }
-
-    fun getTenant(host: String): Tenant? {
-        return TENANT_MAP_HOST[host]
+    @Throws(IdServerException::class)
+    fun getTenant(host: String): Tenant {
+        return TENANT_MAP_HOST[host] ?: throw IdServerException.NOT_FOUND
     }
 
     fun getAllTenants(): List<Tenant> {

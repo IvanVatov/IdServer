@@ -24,9 +24,7 @@ object ClientRepository {
         return if (result) {
             val client = ClientPrincipal(tenantId, clientId, application, generatedSecret)
 
-            IDServer.getTenant(tenantId)?.apply {
-                setClient(client)
-            } ?: throw Exception("Tenant $tenantId do not exist")
+            IDServer.getTenant(tenantId).setClient(client)
 
             client
         } else throw Exception("Failed to create client")
@@ -37,9 +35,7 @@ object ClientRepository {
 
         if (!result) throw Exception("Failed to delete client")
 
-        IDServer.getTenant(tenantId)?.apply {
-            removeClientId(clientId)
-        }  ?: throw Exception("Tenant $tenantId do not exist")
+        IDServer.getTenant(tenantId).removeClientId(clientId)
 
         return result
     }
@@ -51,10 +47,9 @@ object ClientRepository {
 
         if (!result) throw Exception("Failed to update client")
 
-        IDServer.getTenant(client.tenantId)?.apply {
+        IDServer.getTenant(client.tenantId).apply {
 
             val old = getClient(clientId = client.clientId)
-                ?: throw Exception("ClientId ${client.clientId} do not exist")
 
             client.codes.putAll(old.codes)
 
@@ -62,7 +57,7 @@ object ClientRepository {
 
             setClient(client)
 
-        } ?: throw Exception("Tenant ${client.tenantId} do not exist")
+        }
 
         return true
     }

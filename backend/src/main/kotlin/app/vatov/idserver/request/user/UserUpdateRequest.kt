@@ -1,13 +1,10 @@
 package app.vatov.idserver.request.user
 
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.serializers.Iso8601InstantSerializer
 import app.vatov.idserver.model.serializers.MetadataSerializer
-import app.vatov.idserver.response.ErrorResponse
 import app.vatov.idserver.util.isEmailValid
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
-import io.ktor.server.response.respond
 import io.ktor.util.pipeline.PipelineContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -48,10 +45,7 @@ class UserUpdateRequest(
 suspend fun PipelineContext<*, ApplicationCall>.validate(userUpdateRequest: UserUpdateRequest): UserUpdateRequest? {
 
     if (userUpdateRequest.email != null && !isEmailValid(userUpdateRequest.email)) {
-        call.respond(
-            HttpStatusCode.BadRequest, ErrorResponse.INVALID_EMAIL
-        )
-        return null
+        throw IdServerException.INVALID_EMAIL
     }
 
     return userUpdateRequest

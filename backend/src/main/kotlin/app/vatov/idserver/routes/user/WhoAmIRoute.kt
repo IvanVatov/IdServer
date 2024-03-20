@@ -1,9 +1,8 @@
 package app.vatov.idserver.routes.user
 
 import app.vatov.idserver.repository.UserRepository
-import app.vatov.idserver.routes.getTenantOrRespondError
-import app.vatov.idserver.routes.getUserOrRespondError
-import app.vatov.idserver.routes.respondNotFound
+import app.vatov.idserver.routes.getTenant
+import app.vatov.idserver.routes.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -16,17 +15,13 @@ fun Route.userWhoAmI() {
 
         get {
 
-            val tenant = getTenantOrRespondError() ?: return@get
+            val tenant = getTenant()
 
-            val user = getUserOrRespondError() ?: return@get
+            val user = getUserPrincipal()
 
             val existingUser = UserRepository.getUserById(tenant.id, user.id)
 
-            if (existingUser != null) {
-                call.respond(existingUser.getScopedInfo(user.scope))
-            } else {
-                respondNotFound()
-            }
+            call.respond(existingUser.getScopedInfo(user.scope))
         }
     }
 }

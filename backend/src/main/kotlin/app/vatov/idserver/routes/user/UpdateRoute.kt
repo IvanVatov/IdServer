@@ -1,12 +1,12 @@
 package app.vatov.idserver.routes.user
 
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.jsonInstance
 import app.vatov.idserver.model.User
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserUpdateRequest
-import app.vatov.idserver.routes.getTenantOrRespondError
-import app.vatov.idserver.routes.getUserOrRespondError
-import app.vatov.idserver.routes.respondBadRequest
+import app.vatov.idserver.routes.getTenant
+import app.vatov.idserver.routes.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -24,9 +24,9 @@ fun Route.userUpdate() {
 
         patch {
 
-            val tenant = getTenantOrRespondError() ?: return@patch
+            val tenant = getTenant() ?: return@patch
 
-            val userPrincipal = getUserOrRespondError() ?: return@patch
+            val userPrincipal = getUserPrincipal() ?: return@patch
 
             val requestJsonObject = call.receive<JsonObject>()
 
@@ -148,7 +148,7 @@ fun Route.userUpdate() {
             if (result == 1) {
                 call.respond(updatedUser)
             } else {
-                respondBadRequest()
+                throw IdServerException.BAD_REQUEST
             }
         }
     }

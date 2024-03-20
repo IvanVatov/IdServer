@@ -1,11 +1,13 @@
 package app.vatov.idserver.ext
 
 import app.vatov.idserver.Const
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.UserPrincipal
 
-fun UserPrincipal.isAuthorizedAdmin(tenantId: Int): Boolean {
+@Throws(IdServerException::class)
+fun UserPrincipal.checkAuthorizedAdmin(tenantId: Int) {
     if (roles.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
-        return true
+        return
     }
     roles.forEach {
         if (it.startsWith(Const.Administration.TENANT_ADMIN_ROLE_PREFIX)) {
@@ -13,11 +15,11 @@ fun UserPrincipal.isAuthorizedAdmin(tenantId: Int): Boolean {
             if (it.substring(Const.Administration.TENANT_ADMIN_ROLE_PREFIX.length, it.length)
                     .toInt() == tenantId
             ) {
-                return true
+                return
             }
         }
     }
-    return false
+    throw IdServerException.FORBIDDEN
 }
 
 fun UserPrincipal.getOwnedTenantIds(): List<Int> {

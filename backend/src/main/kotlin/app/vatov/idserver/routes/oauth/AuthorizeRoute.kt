@@ -1,16 +1,14 @@
 package app.vatov.idserver.routes.oauth
 
 import app.vatov.idserver.Const
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.AuthorizationInfo
-import app.vatov.idserver.response.ErrorResponse
-import app.vatov.idserver.routes.getTenantOrRespondError
+import app.vatov.idserver.routes.getTenant
 import app.vatov.idserver.routes.readParamOrRespondError
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
 import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
 import io.ktor.server.application.call
-import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
@@ -22,7 +20,7 @@ fun Routing.authorize() {
 
         get {
 
-            val tenant = getTenantOrRespondError() ?: return@get
+            val tenant = getTenant() ?: return@get
 
             val params = call.parameters
 
@@ -32,11 +30,7 @@ fun Routing.authorize() {
                 readParamOrRespondError(params, Const.OAuth.RESPONSE_TYPE) ?: return@get
 
             if (responseType != "code") {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse.BAD_REQUEST
-                )
-                return@get
+                throw IdServerException.BAD_REQUEST
             }
 
             // endregion
@@ -45,15 +39,6 @@ fun Routing.authorize() {
             val clientId = readParamOrRespondError(params, Const.OAuth.CLIENT_ID) ?: return@get
 
             val clientPrincipal = tenant.getClient(clientId)
-
-            if (clientPrincipal == null) {
-
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse.INVALID_CLIENT
-                )
-                return@get
-            }
 
             // endregion
             // region SCOPE
@@ -65,11 +50,7 @@ fun Routing.authorize() {
 
             scopes.forEach {
                 if (!clientPrincipal.settings.scope.contains(it)) {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        ErrorResponse.INVALID_SCOPE
-                    )
-                    return@get
+                    throw IdServerException.INVALID_SCOPE
                 }
             }
 
@@ -80,11 +61,7 @@ fun Routing.authorize() {
 
 
             if (!clientPrincipal.settings.redirectUris.contains(redirectUrl)) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ErrorResponse.BAD_REQUEST
-                )
-                return@get
+                throw IdServerException.BAD_REQUEST // not sure about this error
             }
 
             val state = params[Const.OAuth.STATE] ?: ""
