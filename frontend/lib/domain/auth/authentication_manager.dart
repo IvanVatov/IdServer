@@ -162,7 +162,7 @@ class AuthenticationManager {
 
         final String? mRefreshToken = token.refreshToken;
         if (mRefreshToken != null) {
-         await _writeRefreshToken(mRefreshToken);
+          await _writeRefreshToken(mRefreshToken);
         }
 
         _token = token;
@@ -174,9 +174,9 @@ class AuthenticationManager {
         if (e is DioException && e.response?.statusCode == 400) {
           // clear refresh token
           await _clearRefreshToken();
-        } else {
-          rethrow;
+          _isAuthenticatedCallback(false);
         }
+        rethrow;
       }
     }
     _isAuthenticatedCallback(false);
