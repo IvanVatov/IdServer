@@ -20,10 +20,11 @@ class _LoadingScreenState extends State<LoadingScreen> {
   void initState() {
     super.initState();
     //
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () async {
       try {
-        authenticationManager.tryRefresh();
+        await authenticationManager.tryRefresh();
       } catch (e) {
+        // TODO: SHOW THIS ERROR!, probably no internet or something else not related with DioError
         e;
       }
     });

@@ -1,6 +1,7 @@
 package app.vatov.idserver.routes.oauth.grant
 
 import app.vatov.idserver.Const
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.ClientPrincipal
 import app.vatov.idserver.model.GrantType
 import app.vatov.idserver.model.Tenant
@@ -21,10 +22,7 @@ suspend fun PipelineContext<*, ApplicationCall>.refreshTokenGrantCase(
 ) {
 
     if (!principal.settings.grantTypes.contains(GrantType.REFRESH_TOKEN)) {
-        call.respond(
-            HttpStatusCode.BadRequest, ErrorResponse.UNSUPPORTED_GRANT_TYPE
-        )
-        return
+        throw IdServerException.UNSUPPORTED_GRANT_TYPE
     }
 
     val refreshToken = readParamOrRespondError(params, Const.OAuth.REFRESH_TOKEN) ?: return
@@ -32,49 +30,30 @@ suspend fun PipelineContext<*, ApplicationCall>.refreshTokenGrantCase(
     val userRefreshTokenInfoPair =
         RefreshTokenRepository.getUserAndRefreshTokenInfoByRefreshToken(
             tenant.id, refreshToken
-        )
-
-    if (userRefreshTokenInfoPair == null) {
-        call.respond(
-            HttpStatusCode.BadRequest, ErrorResponse.INVALID_GRAND
-        )
-        return
-    }
+        ) ?: throw IdServerException.INVALID_GRAND
 
     val user = userRefreshTokenInfoPair.first
     val refreshTokenInfo = userRefreshTokenInfoPair.second
 
     if (refreshTokenInfo.clientId != principal.clientId) {
-        call.respond(
-            HttpStatusCode.BadRequest, ErrorResponse.INVALID_SCOPE
-        )
-        return
+        throw IdServerException.INVALID_SCOPE
     }
 
     if (Instant.now()
             .isAfter(refreshTokenInfo.createdAt.plusSeconds(principal.settings.refreshTokenAbsoluteExpiration))
     ) {
-        call.respond(
-            HttpStatusCode.BadRequest, ErrorResponse.INVALID_GRAND
-        )
-        return
+        throw IdServerException.INVALID_GRAND
     }
 
     if (Instant.now()
             .isAfter(refreshTokenInfo.createdAt.plusSeconds(principal.settings.refreshTokenExpiration))
     ) {
-        call.respond(
-            HttpStatusCode.BadRequest, ErrorResponse.INVALID_GRAND
-        )
-        return
+        throw IdServerException.INVALID_GRAND
     }
 
     refreshTokenInfo.scope.forEach {
         if (!principal.settings.scope.contains(it)) {
-            call.respond(
-                HttpStatusCode.BadRequest, ErrorResponse.INVALID_SCOPE
-            )
-            return
+            throw IdServerException.INVALID_SCOPE
         }
     }
 

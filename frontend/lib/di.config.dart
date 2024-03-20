@@ -23,7 +23,7 @@ extension GetItInjectableX on _i1.GetIt {
       environment,
       environmentFilter,
     );
-    gh.singleton<_i3.ApiService>(_i3.ApiService());
+    gh.singleton<_i3.ApiService>(() => _i3.ApiService());
     return this;
   }
 }

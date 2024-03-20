@@ -48,7 +48,7 @@ object UserTable {
     internal const val C_UPDATED_AT = "updated_at"
 
     //
-    internal const val C_ROLE = "role"
+    internal const val C_ROLE = "roles"
     internal const val C_USER_DATA = "user_data"
     internal const val C_SERVER_DATA = "server_data"
 
@@ -464,12 +464,12 @@ object UserTable {
                     }
                     ps.setString(19, user.address)
                     ps.setLong(20, user.updatedAt.epochSecond)
-                    if (user.role != null) {
+                    if (user.roles != null) {
                         ps.setString(
                             21,
                             jsonInstance.encodeToString(
                                 ListSerializer(String.serializer()),
-                                user.role
+                                user.roles
                             )
                         )
                     } else {

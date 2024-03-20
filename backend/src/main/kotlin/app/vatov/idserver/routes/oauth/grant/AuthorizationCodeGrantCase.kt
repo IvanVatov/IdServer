@@ -1,14 +1,13 @@
 package app.vatov.idserver.routes.oauth.grant
 
 import app.vatov.idserver.Const
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.ClientPrincipal
 import app.vatov.idserver.model.GrantType
 import app.vatov.idserver.model.Tenant
 import app.vatov.idserver.repository.RefreshTokenRepository
 import app.vatov.idserver.repository.UserRepository
-import app.vatov.idserver.response.ErrorResponse
 import app.vatov.idserver.response.TokenResponse
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
@@ -21,62 +20,26 @@ suspend fun PipelineContext<*, ApplicationCall>.authorizationCodeGrantCase(
     params: Parameters,
 ) {
     if (!principal.settings.grantTypes.contains(GrantType.AUTHORIZATION_CODE)) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.UNSUPPORTED_GRANT_TYPE
-        )
-        return
+        throw IdServerException.UNSUPPORTED_GRANT_TYPE
     }
 
-    val redirectUrl = params[Const.OAuth.REDIRECT_URI]
+    val redirectUrl = params[Const.OAuth.REDIRECT_URI] ?: throw IdServerException.BAD_REQUEST
 
-    if (redirectUrl == null) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.BAD_REQUEST
-        )
-        return
-    }
+    val code = params[Const.OAuth.CODE] ?: throw IdServerException.INVALID_GRAND
 
-    val code = params[Const.OAuth.CODE]
-
-    if (code == null) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.INVALID_GRAND
-        )
-        return
-    }
-
-    val authorizationInfoWrapper = principal.codes[code]
-
-    if (authorizationInfoWrapper == null) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.INVALID_GRAND
-        )
-        return
-    }
+    val authorizationInfoWrapper = principal.codes[code] ?: throw IdServerException.INVALID_GRAND
 
     principal.codes.remove(code)
 
     if (authorizationInfoWrapper.authorizationInfo.redirectUrl != redirectUrl) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.INVALID_GRAND
-        )
-        return
+        throw IdServerException.INVALID_GRAND
     }
 
     val scopes = authorizationInfoWrapper.authorizationInfo.scope.split(' ')
 
     scopes.forEach {
         if (!principal.settings.scope.contains(it)) {
-            call.respond(
-                HttpStatusCode.BadRequest,
-                ErrorResponse.INVALID_SCOPE
-            )
-            return
+            throw IdServerException.INVALID_SCOPE
         }
     }
 
@@ -86,7 +49,8 @@ suspend fun PipelineContext<*, ApplicationCall>.authorizationCodeGrantCase(
 
         val token = tenant.makeToken(user, principal, scopes)
 
-        val idToken = tenant.makeIdToken(user, principal, authorizationInfoWrapper.authorizationInfo.nonce)
+        val idToken =
+            tenant.makeIdToken(user, principal, authorizationInfoWrapper.authorizationInfo.nonce)
 
         val refreshToken =
             if (scopes.contains(Const.OpenIdScope.OFFLINE_ACCESS)) {
@@ -109,9 +73,6 @@ suspend fun PipelineContext<*, ApplicationCall>.authorizationCodeGrantCase(
             )
         )
     } else {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.INVALID_GRAND
-        )
+        throw IdServerException.INVALID_GRAND
     }
 }

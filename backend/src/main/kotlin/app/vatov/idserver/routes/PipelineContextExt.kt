@@ -1,6 +1,7 @@
 package app.vatov.idserver.routes
 
 import app.vatov.idserver.IDServer
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.Tenant
 import app.vatov.idserver.model.UserPrincipal
 import app.vatov.idserver.response.ErrorResponse
@@ -13,7 +14,8 @@ import io.ktor.server.request.host
 import io.ktor.server.response.respond
 import io.ktor.util.pipeline.PipelineContext
 
-suspend fun PipelineContext<*, ApplicationCall>.readParamOrRespondError(
+@Throws(IdServerException::class)
+fun readParamOrRespondError(
     params: Parameters,
     key: String
 ): String? {
@@ -22,77 +24,31 @@ suspend fun PipelineContext<*, ApplicationCall>.readParamOrRespondError(
         return param
     }
 
-    call.respond(
-        HttpStatusCode.BadRequest,
-        ErrorResponse.BAD_REQUEST
-    )
-
-    return null
+    throw IdServerException.BAD_REQUEST
 }
 
-suspend fun PipelineContext<*, ApplicationCall>.getUserOrRespondError(): UserPrincipal? {
+@Throws(IdServerException::class)
+fun PipelineContext<*, ApplicationCall>.getUserPrincipal(): UserPrincipal {
 
-    val user = call.principal<UserPrincipal>()
-
-    if (user == null) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.BAD_REQUEST
-        )
-    }
-
-    return user
+    return call.principal<UserPrincipal>() ?: throw IdServerException.BAD_REQUEST
 }
 
-suspend fun PipelineContext<*, ApplicationCall>.getTenantOrRespondError(): Tenant? {
+@Throws(IdServerException::class)
+fun PipelineContext<*, ApplicationCall>.getTenant(): Tenant {
 
     val host = this.call.request.host()
 
-    val tenant = IDServer.getTenant(host)
-
-    return if (tenant == null) {
-
-        this.call.respond(
-            HttpStatusCode.NotFound,
-            String()
-        )
-        null
-    } else tenant
+    return IDServer.getTenant(host)
 }
 
-suspend fun PipelineContext<*, ApplicationCall>.respondNotFound() {
-    call.respond(
-        HttpStatusCode.NotFound,
-        ErrorResponse.NOT_FOUND
-    )
-}
+@Throws(IdServerException::class)
+fun PipelineContext<*, ApplicationCall>.getIntParam(key: String): Int {
 
-suspend fun PipelineContext<*, ApplicationCall>.respondBadRequest() {
-    call.respond(
+    return getIntParamOrNull(key) ?: throw IdServerException(
         HttpStatusCode.BadRequest,
-        ErrorResponse.BAD_REQUEST
+        "bad_request",
+        "Parameter $key is required"
     )
-}
-
-suspend fun PipelineContext<*, ApplicationCall>.respondUnauthorized() {
-    call.respond(
-        HttpStatusCode.Unauthorized,
-        ErrorResponse.UNAUTHORIZED
-    )
-}
-
-suspend fun PipelineContext<*, ApplicationCall>.getIntParam(key: String): Int? {
-
-    val value = getIntParamOrNull(key)
-
-    if (value == null) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.BAD_REQUEST.copy(description = "Parameter $key is required")
-        )
-    }
-
-    return value
 }
 
 fun PipelineContext<*, ApplicationCall>.getIntParamOrNull(key: String): Int? {
@@ -100,16 +56,12 @@ fun PipelineContext<*, ApplicationCall>.getIntParamOrNull(key: String): Int? {
     return call.request.queryParameters[key]?.toIntOrNull()
 }
 
-suspend fun PipelineContext<*, ApplicationCall>.getStringParam(key: String): String? {
+@Throws(IdServerException::class)
+fun PipelineContext<*, ApplicationCall>.getStringParam(key: String): String {
 
-    val value = call.request.queryParameters[key]
-
-    if (value == null) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.BAD_REQUEST.copy(description = "Parameter $key is required")
-        )
-    }
-
-    return value
+    return call.request.queryParameters[key] ?: throw IdServerException(
+        HttpStatusCode.BadRequest,
+        "bad_request",
+        "Parameter $key is required"
+    )
 }

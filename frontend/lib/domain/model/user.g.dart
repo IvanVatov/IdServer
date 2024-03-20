@@ -30,7 +30,7 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
       json['phone_number_verified'] as bool?,
       json['address'] as String?,
       const DateTimeConverter().fromJson(json['updated_at'] as String),
-      (json['role'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      (json['roles'] as List<dynamic>?)?.map((e) => e as String).toList(),
       json['user_data'] as Map<String, dynamic>?,
       json['server_data'] as Map<String, dynamic>?,
     );
@@ -59,7 +59,7 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'phone_number_verified': instance.phoneNumberVerified,
       'address': instance.address,
       'updated_at': const DateTimeConverter().toJson(instance.updatedAt),
-      'role': instance.role,
+      'roles': instance.roles,
       'user_data': instance.userData,
       'server_data': instance.serverData,
     };

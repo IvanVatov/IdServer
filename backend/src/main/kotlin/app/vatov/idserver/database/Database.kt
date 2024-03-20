@@ -119,7 +119,7 @@ object Database {
                     GrantType.REFRESH_TOKEN
                 ),
                 scope = listOf(
-                    Const.Administration.TENANT_ADMIN_SCOPE,
+                    Const.OpenIdScope.ROLES,
                     Const.OpenIdScope.OFFLINE_ACCESS
                 )
             )

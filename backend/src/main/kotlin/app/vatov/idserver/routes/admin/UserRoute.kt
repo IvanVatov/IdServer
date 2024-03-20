@@ -1,6 +1,7 @@
 package app.vatov.idserver.routes.admin
 
-import app.vatov.idserver.ext.isAuthorizedAdmin
+import app.vatov.idserver.exception.IdServerException
+import app.vatov.idserver.ext.checkAuthorizedAdmin
 import app.vatov.idserver.jsonInstance
 import app.vatov.idserver.model.User
 import app.vatov.idserver.repository.UserRepository
@@ -10,10 +11,7 @@ import app.vatov.idserver.request.user.validate
 import app.vatov.idserver.routes.getIntParam
 import app.vatov.idserver.routes.getIntParamOrNull
 import app.vatov.idserver.routes.getStringParam
-import app.vatov.idserver.routes.getUserOrRespondError
-import app.vatov.idserver.routes.respondBadRequest
-import app.vatov.idserver.routes.respondNotFound
-import app.vatov.idserver.routes.respondUnauthorized
+import app.vatov.idserver.routes.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -31,14 +29,11 @@ fun Route.adminUsers() {
 
         get {
 
-            val user = getUserOrRespondError() ?: return@get
+            val user = getUserPrincipal()
 
-            val tenantId = getIntParam("tenantId") ?: return@get
+            val tenantId = getIntParam("tenantId")
 
-            if (!user.isAuthorizedAdmin(tenantId)){
-                respondUnauthorized()
-                return@get
-            }
+            user.checkAuthorizedAdmin(tenantId)
 
             val size = getIntParamOrNull("size") ?: 100
 
@@ -53,36 +48,25 @@ fun Route.adminUsers() {
     route("admin/user") {
 
         get {
-            val user = getUserOrRespondError() ?: return@get
+            val user = getUserPrincipal()
 
-            val tenantId = getIntParam("tenantId") ?: return@get
+            val tenantId = getIntParam("tenantId")
 
-            if (!user.isAuthorizedAdmin(tenantId)){
-                respondUnauthorized()
-                return@get
-            }
+            user.checkAuthorizedAdmin(tenantId)
 
-            val userId = getStringParam("userId") ?: return@get
+            val userId = getStringParam("userId")
 
-            val result = UserRepository.getUserById(tenantId, userId)
-
-            if (result == null) {
-                respondNotFound()
-                return@get
-            }
+            val result = UserRepository.getUserById(tenantId, userId) ?: throw IdServerException.NOT_FOUND
 
             call.respond(result)
         }
 
         post {
-            val user = getUserOrRespondError() ?: return@post
+            val user = getUserPrincipal()
 
-            val tenantId = getIntParam("tenantId") ?: return@post
+            val tenantId = getIntParam("tenantId")
 
-            if (!user.isAuthorizedAdmin(tenantId)){
-                respondUnauthorized()
-                return@post
-            }
+            user.checkAuthorizedAdmin(tenantId)
 
             val userRegistrationRequest = call.receive<UserRegistrationRequest>()
 
@@ -92,16 +76,13 @@ fun Route.adminUsers() {
         }
 
         post("patch") {
-            val user = getUserOrRespondError() ?: return@post
+            val user = getUserPrincipal()
 
-            val tenantId = getIntParam("tenantId") ?: return@post
+            val tenantId = getIntParam("tenantId")
 
-            if (!user.isAuthorizedAdmin(tenantId)){
-                respondUnauthorized()
-                return@post
-            }
+            user.checkAuthorizedAdmin(tenantId)
 
-            val userId = getStringParam("userId") ?: return@post
+            val userId = getStringParam("userId")
 
             val requestJsonObject = call.receive<JsonObject>()
 
@@ -185,7 +166,8 @@ fun Route.adminUsers() {
                     null
                 else
                     request.zoneInfo ?: oldUser.zoneInfo,
-                locale = if (removeKeys.contains("locale")) null else request.locale ?: oldUser.locale,
+                locale = if (removeKeys.contains("locale")) null else request.locale
+                    ?: oldUser.locale,
                 phoneNumber = if (removeKeys.contains("phone_number")) null else request.phoneNumber
                     ?: oldUser.phoneNumber,
                 phoneNumberVerified = if (request.phoneNumber == null && oldUser.phoneNumber == null)
@@ -195,10 +177,10 @@ fun Route.adminUsers() {
                 address = if (removeKeys.contains("address")) null else request.address
                     ?: oldUser.address,
                 Instant.now(),
-                role = if (removeKeys.contains("role"))
+                roles = if (removeKeys.contains("roles"))
                     null
                 else
-                    request.role ?: oldUser.role,
+                    request.roles ?: oldUser.roles,
                 userData = if (removeKeys.contains("user_data"))
                     null
                 else
@@ -217,7 +199,7 @@ fun Route.adminUsers() {
             if (result == 1) {
                 call.respond(updatedUser)
             } else {
-                respondBadRequest()
+                throw IdServerException.BAD_REQUEST
             }
         }
     }

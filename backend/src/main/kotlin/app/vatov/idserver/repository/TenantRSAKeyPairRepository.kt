@@ -37,7 +37,7 @@ object TenantRSAKeyPairRepository {
 
         val tenant = IDServer.getTenant(tenantId)
 
-        val key = tenant?.getValidPublicKeys()?.find { it.id == keyId }
+        val key = tenant.getValidPublicKeys().find { it.id == keyId }
             ?: throw Exception("Key Id: $keyId not found")
 
         if (TenantRSAKeyPairTable.delete(tenantId, keyId)) {

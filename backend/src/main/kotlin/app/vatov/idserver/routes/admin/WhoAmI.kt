@@ -2,8 +2,7 @@ package app.vatov.idserver.routes.admin
 
 import app.vatov.idserver.Const
 import app.vatov.idserver.repository.UserRepository
-import app.vatov.idserver.routes.getUserOrRespondError
-import app.vatov.idserver.routes.respondNotFound
+import app.vatov.idserver.routes.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -16,14 +15,10 @@ fun Route.adminWhoAmI() {
 
         get {
 
-            val user = getUserOrRespondError() ?: return@get
+            val user = getUserPrincipal() ?: return@get
 
+            //TODO: implement me!
             val result = UserRepository.getUserById(Const.Administration.TENANT_ID, user.id)
-
-            if (result == null) {
-                respondNotFound()
-                return@get
-            }
 
             call.respond(user)
         }

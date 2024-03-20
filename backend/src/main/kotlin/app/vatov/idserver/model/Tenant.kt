@@ -9,6 +9,7 @@ import com.auth0.jwt.interfaces.JWTVerifier
 import com.auth0.jwt.interfaces.RSAKeyProvider
 import app.vatov.idserver.Configuration
 import app.vatov.idserver.Const
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.serializers.toIso8601
 import app.vatov.idserver.util.decrypt
 import app.vatov.idserver.util.encrypt
@@ -83,7 +84,7 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
             .withClaim(Const.OAuth.SCOPE, scope)
 
         if (scope.contains(Const.OpenIdScope.ROLES)) {
-            builder.withClaim(Const.OpenIdScope.ROLES, user.role ?: emptyList<String>())
+            builder.withClaim(Const.OpenIdScope.ROLES, user.roles ?: emptyList<String>())
         }
 
         if (scope.contains(Const.OpenIdScope.PROFILE)) {
@@ -240,8 +241,8 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
         }
     }
 
-    fun getClient(clientId: String): ClientPrincipal? {
-        return _clients[clientId]
+    fun getClient(clientId: String): ClientPrincipal {
+        return _clients[clientId] ?: throw IdServerException.INVALID_CLIENT
     }
 
     fun setClients(listClients: List<ClientPrincipal>) {

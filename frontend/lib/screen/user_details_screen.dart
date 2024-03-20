@@ -164,8 +164,8 @@ class _UsersDetailsScreenState extends ProtectedScreenState<UsersDetailsScreen> 
         _serverDataController.text = prettyJson.convert(user.serverData);
       }
 
-      if (user.role != null) {
-        _addedRoles.addAll(user.role!);
+      if (user.roles != null) {
+        _addedRoles.addAll(user.roles!);
       }
     });
   }
@@ -317,22 +317,22 @@ class _UsersDetailsScreenState extends ProtectedScreenState<UsersDetailsScreen> 
         userMap['address'] = _addressController.text;
       }
 
-      if (user.role != null && _addedRoles.isEmpty) {
+      if (user.roles != null && _addedRoles.isEmpty) {
         userMap["role"] = null;
       } else if (_addedRoles.isNotEmpty) {
         var isTheSame = true;
-        if (user.role?.length != _addedRoles.length) {
+        if (user.roles?.length != _addedRoles.length) {
           isTheSame = false;
         } else {
           for (final element in _addedRoles) {
-            if (user.role?.contains(element) != true) {
+            if (user.roles?.contains(element) != true) {
               isTheSame = false;
               break;
             }
           }
         }
         if (!isTheSame) {
-          userMap['role'] = _addedRoles.toList(growable: false);
+          userMap['roles'] = _addedRoles.toList(growable: false);
         }
       }
 

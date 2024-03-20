@@ -4,7 +4,7 @@ import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.User
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserRegistrationRequest
-import app.vatov.idserver.routes.getTenantOrRespondError
+import app.vatov.idserver.routes.getTenant
 import io.ktor.http.ContentType
 import io.ktor.server.application.call
 import io.ktor.server.request.contentType
@@ -22,9 +22,11 @@ fun Routing.userRegister() {
     route("user/register") {
 
         get {
+            val tenant = getTenant() ?: return@get
+
             call.respond(
                 VelocityContent(
-                    "register.html", mapOf(
+                    "${tenant.id}/register.html", mapOf(
                         "account" to "",
                         "password" to ""
                     )
@@ -34,7 +36,7 @@ fun Routing.userRegister() {
 
         post {
 
-            val tenant = getTenantOrRespondError() ?: return@post
+            val tenant = getTenant() ?: return@post
 
             when (call.request.contentType()) {
                 ContentType.Application.Json -> {
@@ -96,11 +98,11 @@ fun Routing.userRegister() {
 
                     if (user != null) {
                         // TODO return success response
-                        call.respond(VelocityContent("registration_success.html", emptyMap()))
+                        call.respond(VelocityContent("${tenant.id}/registration_success.html", emptyMap()))
                         return@post
                     }
 
-                    call.respond(VelocityContent("register.html", map))
+                    call.respond(VelocityContent("${tenant.id}/register.html", map))
                 }
             }
         }

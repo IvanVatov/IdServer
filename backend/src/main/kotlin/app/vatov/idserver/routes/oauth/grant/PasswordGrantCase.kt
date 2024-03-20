@@ -1,6 +1,7 @@
 package app.vatov.idserver.routes.oauth.grant
 
 import app.vatov.idserver.Const
+import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.ClientPrincipal
 import app.vatov.idserver.model.GrantType
 import app.vatov.idserver.model.Tenant
@@ -19,11 +20,7 @@ import io.ktor.util.pipeline.PipelineContext
 suspend fun PipelineContext<*, ApplicationCall>.passwordGrantCase(tenant: Tenant, principal: ClientPrincipal, params: Parameters, userAgent: String ) {
 
     if (!principal.settings.grantTypes.contains(GrantType.PASSWORD)) {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.UNSUPPORTED_GRANT_TYPE
-        )
-        return
+        throw IdServerException.UNSUPPORTED_GRANT_TYPE
     }
 
     val userName =
@@ -35,11 +32,7 @@ suspend fun PipelineContext<*, ApplicationCall>.passwordGrantCase(tenant: Tenant
 
     scopes.forEach {
         if (!principal.settings.scope.contains(it)) {
-            call.respond(
-                HttpStatusCode.BadRequest,
-                ErrorResponse.INVALID_SCOPE
-            )
-            return
+            throw IdServerException.INVALID_SCOPE
         }
     }
 
@@ -69,10 +62,6 @@ suspend fun PipelineContext<*, ApplicationCall>.passwordGrantCase(tenant: Tenant
             )
         )
     } else {
-        call.respond(
-            HttpStatusCode.BadRequest,
-            ErrorResponse.INVALID_GRAND
-        )
+        throw IdServerException.INVALID_GRAND
     }
-    return
 }

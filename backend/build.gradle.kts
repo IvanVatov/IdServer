@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
+    kotlin("plugin.serialization") version "1.9.23"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     application
 }
@@ -10,13 +10,14 @@ plugins {
 group = "app.vatov.idserver"
 version = "1.0.0"
 
+val targetJVM = "17"
+val ktorVersion = "2.3.9"
+
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of("17"))
+        languageVersion.set(JavaLanguageVersion.of(targetJVM))
     }
 }
-
-val ktorVersion = "2.3.7"
 
 repositories {
     mavenCentral()
@@ -61,12 +62,12 @@ dependencies {
 
     implementation("com.sun.mail:jakarta.mail:2.0.1")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
-    implementation("org.mariadb.jdbc:mariadb-java-client:3.3.2")
+    implementation("org.mariadb.jdbc:mariadb-java-client:3.3.3")
 
-    implementation("ch.qos.logback:logback-classic:1.4.14")
-    implementation("org.slf4j:slf4j-api:2.0.10")
+    implementation("ch.qos.logback:logback-classic:1.5.3")
+    implementation("org.slf4j:slf4j-api:2.0.12")
 
 
     // Test dependencies
@@ -83,7 +84,7 @@ application {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = targetJVM
 }
 
 distributions {
@@ -104,7 +105,7 @@ distributions {
             from("workingDir/templates") {
                 into("templates")
             }
-            from("workingDir/startScripts")
+            from("dist/startScripts")
             from("../frontend/build/web") {
                 into("admin")
             }
