@@ -1,13 +1,12 @@
 package app.vatov.idserver
 
 import app.vatov.idserver.exception.IdServerException
+import app.vatov.idserver.ext.respondException
 import app.vatov.idserver.model.UserPrincipal
-import app.vatov.idserver.response.ErrorResponse
 import app.vatov.idserver.routes.applicationRoute
 import com.auth0.jwt.JWT
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -22,6 +21,7 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.host
 import io.ktor.server.response.respond
 import io.ktor.server.velocity.Velocity
+import org.apache.velocity.exception.ResourceNotFoundException
 import org.slf4j.LoggerFactory
 import java.net.URL
 
@@ -41,20 +41,14 @@ fun Application.webServerModule(testing: Boolean = false) {
         exception<Throwable> { call, cause ->
             when (cause) {
                 is BadRequestException ->
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        ErrorResponse("bad_request", "Invalid request.")
-                    )
+                    call.respondException(IdServerException.BAD_REQUEST)
+
+                is ResourceNotFoundException ->
+                    call.respondException(IdServerException.NOT_FOUND)
 
                 else -> {
                     _LOG.error("webServerModule", cause)
-                    call.respond(
-                        HttpStatusCode.InternalServerError,
-                        ErrorResponse(
-                            "internal_server_error",
-                            "Something bad happened on the server."
-                        )
-                    )
+                    call.respondException(IdServerException.INTERNAL_SERVER_ERROR)
                 }
             }
         }
@@ -90,7 +84,7 @@ fun Application.webServerModule(testing: Boolean = false) {
                 val client = tenant.getClient(credentials.name)
 
                 if (client.clientSecret != credentials.password) {
-                   throw IdServerException.INVALID_CLIENT
+                    throw IdServerException.INVALID_CLIENT
                 }
 
                 client
