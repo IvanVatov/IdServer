@@ -16,7 +16,7 @@ import app.vatov.idserver.routes.oauth.token
 import app.vatov.idserver.routes.user.userChangePassword
 import app.vatov.idserver.routes.user.userRegister
 import app.vatov.idserver.routes.user.userUpdate
-import app.vatov.idserver.routes.user.userWhoAmI
+import app.vatov.idserver.routes.user.userInfo
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
@@ -41,11 +41,23 @@ fun Application.applicationRoute() {
             token()
         }
 
+        // protected
+        authenticate {
+            route("user") {
+                userInfo()
+                userChangePassword()
+                userUpdate()
+            }
+        }
+
+        staticFiles("/static", File("./static"))
+
+        // region Administration
+
         route("admin") {
             authenticate(Const.AuthName.ADMINISTRATION_BASIC) {
                 adminToken()
             }
-
 
             authenticate(Const.AuthName.ADMINISTRATION_BEARER) {
                 adminWhoAmI()
@@ -54,13 +66,6 @@ fun Application.applicationRoute() {
                 serverConfiguration()
                 adminUsers()
             }
-        }
-
-        // protected
-        authenticate {
-            userWhoAmI()
-            userChangePassword()
-            userUpdate()
         }
 
         staticFiles(
@@ -78,6 +83,6 @@ fun Application.applicationRoute() {
             }
         }
 
-        staticFiles("/static", File("./static"))
+        // endregion
     }
 }

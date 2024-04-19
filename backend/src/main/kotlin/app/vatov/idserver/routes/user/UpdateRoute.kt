@@ -20,7 +20,7 @@ import java.time.Instant
 
 fun Route.userUpdate() {
 
-    route("user/update") {
+    route("update") {
 
         patch {
 

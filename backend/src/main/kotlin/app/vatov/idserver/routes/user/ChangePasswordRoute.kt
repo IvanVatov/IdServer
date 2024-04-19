@@ -14,7 +14,7 @@ import io.ktor.server.routing.route
 
 fun Route.userChangePassword() {
 
-    route("user/changePassword") {
+    route("changePassword") {
 
         post {
 
