@@ -23,7 +23,7 @@ suspend fun PipelineContext<*, ApplicationCall>.refreshTokenGrantCase(
         throw IdServerException.UNSUPPORTED_GRANT_TYPE
     }
 
-    val refreshToken = readParamOrRespondError(params, Const.OAuth.REFRESH_TOKEN) ?: return
+    val refreshToken = readParamOrRespondError(params, Const.OAuth.REFRESH_TOKEN)
 
     val userRefreshTokenInfoPair =
         RefreshTokenRepository.getUserAndRefreshTokenInfoByRefreshToken(

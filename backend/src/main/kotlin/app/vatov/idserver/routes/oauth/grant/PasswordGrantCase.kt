@@ -22,9 +22,9 @@ suspend fun PipelineContext<*, ApplicationCall>.passwordGrantCase(tenant: Tenant
     }
 
     val userName =
-        readParamOrRespondError(params, Const.OAuth.USERNAME) ?: return
+        readParamOrRespondError(params, Const.OAuth.USERNAME)
     val password =
-        readParamOrRespondError(params, Const.OAuth.PASSWORD) ?: return
+        readParamOrRespondError(params, Const.OAuth.PASSWORD)
 
     val scopes = (params[Const.OAuth.SCOPE] ?: Const.EMPTY_STRING).split(' ')
 

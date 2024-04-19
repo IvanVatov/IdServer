@@ -16,13 +16,8 @@ import io.ktor.util.pipeline.PipelineContext
 fun readParamOrRespondError(
     params: Parameters,
     key: String
-): String? {
-    val param = params[key]
-    if (param != null) {
-        return param
-    }
-
-    throw IdServerException.BAD_REQUEST
+): String {
+    return params[key] ?: throw IdServerException.BAD_REQUEST
 }
 
 @Throws(IdServerException::class)

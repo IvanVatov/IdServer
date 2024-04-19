@@ -27,7 +27,7 @@ fun Routing.authorize() {
             // region RESPONSE TYPE
 
             val responseType =
-                readParamOrRespondError(params, Const.OAuth.RESPONSE_TYPE) ?: return@get
+                readParamOrRespondError(params, Const.OAuth.RESPONSE_TYPE)
 
             if (responseType != "code") {
                 throw IdServerException.BAD_REQUEST
@@ -36,7 +36,7 @@ fun Routing.authorize() {
             // endregion
             // region CLIENT
 
-            val clientId = readParamOrRespondError(params, Const.OAuth.CLIENT_ID) ?: return@get
+            val clientId = readParamOrRespondError(params, Const.OAuth.CLIENT_ID)
 
             val clientPrincipal = tenant.getClient(clientId)
 
@@ -57,7 +57,7 @@ fun Routing.authorize() {
             // endregion
 
             val redirectUrl =
-                readParamOrRespondError(params, Const.OAuth.REDIRECT_URI) ?: return@get
+                readParamOrRespondError(params, Const.OAuth.REDIRECT_URI)
 
 
             if (!clientPrincipal.settings.redirectUris.contains(redirectUrl)) {

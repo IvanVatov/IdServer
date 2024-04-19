@@ -23,7 +23,7 @@ fun Route.token() {
 
         post {
 
-            val tenant = getTenant() ?: return@post
+            val tenant = getTenant()
 
             val params = call.receiveParameters()
 
