@@ -3,8 +3,8 @@ package app.vatov.idserver.routes.oauth
 import app.vatov.idserver.Const
 import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.AuthorizationInfo
-import app.vatov.idserver.routes.getTenant
-import app.vatov.idserver.routes.readParamOrRespondError
+import app.vatov.idserver.ext.getTenant
+import app.vatov.idserver.ext.readParamOrRespondError
 import io.ktor.http.Parameters
 import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol

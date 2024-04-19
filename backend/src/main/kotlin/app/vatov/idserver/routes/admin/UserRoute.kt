@@ -8,10 +8,10 @@ import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserRegistrationRequest
 import app.vatov.idserver.request.user.UserUpdateRequest
 import app.vatov.idserver.request.user.validate
-import app.vatov.idserver.routes.getIntParam
-import app.vatov.idserver.routes.getIntParamOrNull
-import app.vatov.idserver.routes.getStringParam
-import app.vatov.idserver.routes.getUserPrincipal
+import app.vatov.idserver.ext.getIntParam
+import app.vatov.idserver.ext.getIntParamOrNull
+import app.vatov.idserver.ext.getStringParam
+import app.vatov.idserver.ext.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -25,9 +25,9 @@ import java.time.Instant
 
 fun Route.adminUsers() {
 
-    route("admin/user/list") {
+    route("user") {
 
-        get {
+        get("list") {
 
             val user = getUserPrincipal()
 
@@ -43,11 +43,9 @@ fun Route.adminUsers() {
 
             call.respond(users)
         }
-    }
-
-    route("admin/user") {
 
         get {
+
             val user = getUserPrincipal()
 
             val tenantId = getIntParam("tenantId")
@@ -62,6 +60,7 @@ fun Route.adminUsers() {
         }
 
         post {
+
             val user = getUserPrincipal()
 
             val tenantId = getIntParam("tenantId")
@@ -76,6 +75,7 @@ fun Route.adminUsers() {
         }
 
         post("patch") {
+
             val user = getUserPrincipal()
 
             val tenantId = getIntParam("tenantId")

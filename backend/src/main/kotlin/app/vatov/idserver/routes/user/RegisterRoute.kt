@@ -4,7 +4,7 @@ import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.User
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserRegistrationRequest
-import app.vatov.idserver.routes.getTenant
+import app.vatov.idserver.ext.getTenant
 import io.ktor.http.ContentType
 import io.ktor.server.application.call
 import io.ktor.server.request.contentType

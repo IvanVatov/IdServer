@@ -23,7 +23,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.request.host
 import io.ktor.server.response.respond
-import io.ktor.server.routing.routing
+import io.ktor.server.routing.*
 import java.io.File
 
 fun Application.applicationRoute() {
@@ -41,16 +41,19 @@ fun Application.applicationRoute() {
             token()
         }
 
-        authenticate(Const.AuthName.ADMINISTRATION_BASIC) {
-            adminToken()
-        }
+        route("admin") {
+            authenticate(Const.AuthName.ADMINISTRATION_BASIC) {
+                adminToken()
+            }
 
-        authenticate(Const.AuthName.ADMINISTRATION_BEARER) {
-            adminWhoAmI()
-            tenantRoutes()
-            clientRoutes()
-            serverConfiguration()
-            adminUsers()
+
+            authenticate(Const.AuthName.ADMINISTRATION_BEARER) {
+                adminWhoAmI()
+                tenantRoutes()
+                clientRoutes()
+                serverConfiguration()
+                adminUsers()
+            }
         }
 
         // protected

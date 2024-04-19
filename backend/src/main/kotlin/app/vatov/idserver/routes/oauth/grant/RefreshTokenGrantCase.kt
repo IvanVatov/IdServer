@@ -6,10 +6,8 @@ import app.vatov.idserver.model.ClientPrincipal
 import app.vatov.idserver.model.GrantType
 import app.vatov.idserver.model.Tenant
 import app.vatov.idserver.repository.RefreshTokenRepository
-import app.vatov.idserver.response.ErrorResponse
 import app.vatov.idserver.response.TokenResponse
-import app.vatov.idserver.routes.readParamOrRespondError
-import io.ktor.http.HttpStatusCode
+import app.vatov.idserver.ext.readParamOrRespondError
 import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call

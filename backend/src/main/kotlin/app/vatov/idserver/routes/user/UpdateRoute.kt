@@ -5,8 +5,8 @@ import app.vatov.idserver.jsonInstance
 import app.vatov.idserver.model.User
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserUpdateRequest
-import app.vatov.idserver.routes.getTenant
-import app.vatov.idserver.routes.getUserPrincipal
+import app.vatov.idserver.ext.getTenant
+import app.vatov.idserver.ext.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond

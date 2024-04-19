@@ -2,7 +2,7 @@ package app.vatov.idserver.routes.oauth
 
 import app.vatov.idserver.model.AuthorizationInfoWrapper
 import app.vatov.idserver.repository.UserRepository
-import app.vatov.idserver.routes.getTenant
+import app.vatov.idserver.ext.getTenant
 import app.vatov.idserver.util.generateRandomString
 import io.ktor.http.Parameters
 import io.ktor.http.URLBuilder

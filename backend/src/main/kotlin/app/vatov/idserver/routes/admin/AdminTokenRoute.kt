@@ -16,7 +16,7 @@ import io.ktor.server.routing.route
 
 fun Route.adminToken() {
 
-    route("admin/${Const.Endpoint.TOKEN}") {
+    route(Const.Endpoint.TOKEN) {
 
         post {
 

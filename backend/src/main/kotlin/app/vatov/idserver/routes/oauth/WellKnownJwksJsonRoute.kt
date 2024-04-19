@@ -2,7 +2,7 @@ package app.vatov.idserver.routes.oauth
 
 import app.vatov.idserver.repository.TenantRSAKeyPairRepository
 import app.vatov.idserver.response.JwskResponse
-import app.vatov.idserver.routes.getTenant
+import app.vatov.idserver.ext.getTenant
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing

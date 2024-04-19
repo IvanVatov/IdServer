@@ -8,9 +8,9 @@ import app.vatov.idserver.repository.ClientRepository
 import app.vatov.idserver.request.admin.CreateClientRequest
 import app.vatov.idserver.request.admin.DeleteClientRequest
 import app.vatov.idserver.response.ResultResponse
-import app.vatov.idserver.routes.getIntParam
-import app.vatov.idserver.routes.getStringParam
-import app.vatov.idserver.routes.getUserPrincipal
+import app.vatov.idserver.ext.getIntParam
+import app.vatov.idserver.ext.getStringParam
+import app.vatov.idserver.ext.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -21,9 +21,10 @@ import io.ktor.server.routing.route
 
 fun Route.clientRoutes() {
 
-    route("admin/client") {
+    route("client") {
 
         get {
+
             val user = getUserPrincipal()
 
             val tenantId = getIntParam("tenantId")
@@ -52,6 +53,7 @@ fun Route.clientRoutes() {
         }
 
         post("delete") {
+
             val user = getUserPrincipal() ?: return@post
 
             val request = call.receive<DeleteClientRequest>()
@@ -66,11 +68,9 @@ fun Route.clientRoutes() {
 
             call.respond(ResultResponse(result))
         }
-    }
 
-    route("admin/client/list") {
+        get("list") {
 
-        get {
             val user = getUserPrincipal()
 
             val tenantId = getIntParam("tenantId")
@@ -79,11 +79,9 @@ fun Route.clientRoutes() {
 
             call.respond(ClientRepository.getAllForTenantId(tenantId))
         }
-    }
 
-    route("admin/client/create") {
+        post("create") {
 
-        post {
             val user = getUserPrincipal() ?: return@post
 
             val request = call.receive<CreateClientRequest>()
