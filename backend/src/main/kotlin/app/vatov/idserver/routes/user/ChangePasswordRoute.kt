@@ -18,9 +18,9 @@ fun Route.userChangePassword() {
 
         post {
 
-            val tenant = getTenant() ?: return@post
+            val tenant = getTenant()
 
-            val user = getUserPrincipal() ?: return@post
+            val user = getUserPrincipal()
 
             val request = call.receive<UserChangePasswordRequest>()
 

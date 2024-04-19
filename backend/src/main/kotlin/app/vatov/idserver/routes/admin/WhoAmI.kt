@@ -15,7 +15,7 @@ fun Route.adminWhoAmI() {
 
         get {
 
-            val user = getUserPrincipal() ?: return@get
+            val user = getUserPrincipal()
 
             //TODO: implement me!
             val result = UserRepository.getUserById(Const.Administration.TENANT_ID, user.id)

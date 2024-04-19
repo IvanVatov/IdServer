@@ -54,7 +54,7 @@ fun Route.adminUsers() {
 
             val userId = getStringParam("userId")
 
-            val result = UserRepository.getUserById(tenantId, userId) ?: throw IdServerException.NOT_FOUND
+            val result = UserRepository.getUserById(tenantId, userId)
 
             call.respond(result)
         }
@@ -102,7 +102,7 @@ fun Route.adminUsers() {
             ) ?: return@post
 
             val oldUser = UserRepository.getUserById(tenantId, userId)
-                ?: throw NullPointerException("User cannot be found")
+
             // TODO: Return not found without exception
 
 

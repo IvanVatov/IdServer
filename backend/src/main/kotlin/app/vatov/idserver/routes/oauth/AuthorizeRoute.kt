@@ -20,7 +20,7 @@ fun Routing.authorize() {
 
         get {
 
-            val tenant = getTenant() ?: return@get
+            val tenant = getTenant()
 
             val params = call.parameters
 

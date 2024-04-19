@@ -54,7 +54,7 @@ fun Route.clientRoutes() {
 
         post("delete") {
 
-            val user = getUserPrincipal() ?: return@post
+            val user = getUserPrincipal()
 
             val request = call.receive<DeleteClientRequest>()
 
@@ -82,7 +82,7 @@ fun Route.clientRoutes() {
 
         post("create") {
 
-            val user = getUserPrincipal() ?: return@post
+            val user = getUserPrincipal()
 
             val request = call.receive<CreateClientRequest>()
 

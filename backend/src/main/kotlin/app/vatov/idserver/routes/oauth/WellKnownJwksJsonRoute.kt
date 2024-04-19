@@ -14,7 +14,7 @@ fun Routing.jwksJson() {
     route("jwks.json") {
 
         get {
-            val tenant = getTenant() ?: return@get
+            val tenant = getTenant()
 
             val keys = TenantRSAKeyPairRepository.getAllForTenant(tenant.id).map { it.toJsonWebKey() }
 

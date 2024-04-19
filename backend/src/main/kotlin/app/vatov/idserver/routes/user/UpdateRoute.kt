@@ -24,9 +24,9 @@ fun Route.userUpdate() {
 
         patch {
 
-            val tenant = getTenant() ?: return@patch
+            val tenant = getTenant()
 
-            val userPrincipal = getUserPrincipal() ?: return@patch
+            val userPrincipal = getUserPrincipal()
 
             val requestJsonObject = call.receive<JsonObject>()
 
@@ -44,8 +44,6 @@ fun Route.userUpdate() {
             )
 
             val user = UserRepository.getUserById(tenant.id, userPrincipal.id)
-                ?: throw NullPointerException("User cannot be found")
-
 
             // TODO: Validate fields eg: profile should be url and ect.
 

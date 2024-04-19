@@ -22,7 +22,7 @@ fun Routing.userRegister() {
     route("user/register") {
 
         get {
-            val tenant = getTenant() ?: return@get
+            val tenant = getTenant()
 
             call.respond(
                 VelocityContent(
@@ -36,7 +36,7 @@ fun Routing.userRegister() {
 
         post {
 
-            val tenant = getTenant() ?: return@post
+            val tenant = getTenant()
 
             when (call.request.contentType()) {
                 ContentType.Application.Json -> {
