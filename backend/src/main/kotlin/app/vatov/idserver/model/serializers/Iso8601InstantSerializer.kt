@@ -1,8 +1,6 @@
 package app.vatov.idserver.model.serializers
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -11,7 +9,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 val UTC_ZONE_ID: ZoneId = ZoneId.ofOffset("UTC", ZoneOffset.UTC)
 
@@ -25,8 +22,6 @@ fun Instant.toIso8601(): String {
         .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 }
 
-@OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = Date::class)
 object Iso8601InstantSerializer : KSerializer<Instant> {
 
     override fun deserialize(decoder: Decoder): Instant {

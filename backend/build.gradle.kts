@@ -10,7 +10,7 @@ plugins {
 group = "app.vatov.idserver"
 version = "1.0.0"
 
-val targetJVM = "17"
+val targetJVM = "11"
 val ktorVersion = "2.3.9"
 
 kotlin {
@@ -102,8 +102,8 @@ distributions {
             from("workingDir/static") {
                 into("static")
             }
-            from("workingDir/templates") {
-                into("templates")
+            from("workingDir/templates/default") {
+                into("templates/default")
             }
             from("dist/startScripts")
             from("../frontend/build/web") {
