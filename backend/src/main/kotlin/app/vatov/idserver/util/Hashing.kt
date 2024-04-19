@@ -4,11 +4,11 @@ import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
+private val messageDigestSHA256 = MessageDigest.getInstance("SHA-256")
+
 fun hashSHA256(text: String): String {
 
-    val messageDigest = MessageDigest.getInstance("SHA-256")
-
-    val byteArray = messageDigest.digest(text.toByteArray(StandardCharsets.UTF_8))
+    val byteArray = messageDigestSHA256.digest(text.toByteArray(StandardCharsets.UTF_8))
 
     val bigInt = BigInteger(1, byteArray)
 
