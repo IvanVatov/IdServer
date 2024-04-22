@@ -251,6 +251,10 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
         }
     }
 
+    fun getClients(): Collection<ClientPrincipal> {
+        return _clients.values
+    }
+
     fun setClient(clientPrincipal: ClientPrincipal) {
         _clients[clientPrincipal.clientId] = clientPrincipal
     }

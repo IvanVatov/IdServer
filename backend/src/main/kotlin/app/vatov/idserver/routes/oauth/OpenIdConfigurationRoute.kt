@@ -17,7 +17,7 @@ fun Routing.openIdConfiguration() {
 
             val tenant = getTenant()
 
-            val config = OpenIdConfigurationResponse.buildWithIssuer(tenant.issuer)
+            val config = OpenIdConfigurationResponse.buildWithTenant(tenant)
 
             call.respond(config)
         }
