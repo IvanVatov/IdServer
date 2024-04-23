@@ -18,8 +18,6 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import java.net.URLDecoder
-import java.net.URLEncoder
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.time.Instant
@@ -268,7 +266,7 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
     fun encryptInfo(
         authorizationInfo: AuthorizationInfo
     ): String {
-        return URLEncoder.encode(authorizationInfo.toString().encrypt(_secretKey), Charsets.UTF_8)
+        return authorizationInfo.toString().encrypt(_secretKey)
     }
 
     fun decryptInfoInfo(
@@ -276,7 +274,7 @@ data class Tenant(val id: Int, val name: String, val host: String, val aliases: 
     ): AuthorizationInfo? {
         return try {
             AuthorizationInfo.fromString(
-                URLDecoder.decode(encryptedString, Charsets.UTF_8).decrypt(_secretKey)
+                encryptedString.decrypt(_secretKey)
             )
         } catch (t: Throwable) {
             null
