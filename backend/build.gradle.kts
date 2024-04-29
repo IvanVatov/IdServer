@@ -58,7 +58,6 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
     implementation("io.ktor:ktor-server-velocity:$ktorVersion")
-//    implementation("io.ktor:ktor-server-cors:$ktorVersion")
 
     implementation("com.sun.mail:jakarta.mail:2.0.1")
 

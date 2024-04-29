@@ -127,21 +127,5 @@ fun Application.webServerModule(testing: Boolean = false) {
         setProperty("resource.loader.file.path", "./templates")
     }
 
-//    install(CORS) {
-//        this.allowCredentials = true
-//
-//        allowHeader(HttpHeaders.ContentType)
-//        allowHeader(HttpHeaders.Authorization)
-//        allowHeader(HttpHeaders.Origin)
-//        allowHeader(HttpHeaders.Host)
-//        allowHeader(HttpHeaders.AccessControlAllowOrigin)
-//
-//        allowMethod(HttpMethod.Options)
-//        allowMethod(HttpMethod.Post)
-//        allowMethod(HttpMethod.Get)
-//
-//        allowHost(host = "*", schemes = listOf("https"))
-//    }
-
     applicationRoute()
 }
