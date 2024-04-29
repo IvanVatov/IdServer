@@ -1,30 +1,23 @@
-package app.vatov.idserver.routes
+package app.vatov.idserver.ext
 
 import app.vatov.idserver.IDServer
 import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.Tenant
 import app.vatov.idserver.model.UserPrincipal
-import app.vatov.idserver.response.ErrorResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.principal
 import io.ktor.server.request.host
-import io.ktor.server.response.respond
 import io.ktor.util.pipeline.PipelineContext
 
 @Throws(IdServerException::class)
 fun readParamOrRespondError(
     params: Parameters,
     key: String
-): String? {
-    val param = params[key]
-    if (param != null) {
-        return param
-    }
-
-    throw IdServerException.BAD_REQUEST
+): String {
+    return params[key] ?: throw IdServerException.BAD_REQUEST
 }
 
 @Throws(IdServerException::class)

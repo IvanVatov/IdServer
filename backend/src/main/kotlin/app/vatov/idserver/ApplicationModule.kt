@@ -5,22 +5,17 @@ import app.vatov.idserver.ext.respondException
 import app.vatov.idserver.model.UserPrincipal
 import app.vatov.idserver.routes.applicationRoute
 import com.auth0.jwt.JWT
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.auth.HttpAuthHeader
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.Application
-import io.ktor.server.application.install
-import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.basic
-import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.plugins.BadRequestException
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.plugins.cors.routing.CORS
-import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.request.host
-import io.ktor.server.response.respond
-import io.ktor.server.velocity.Velocity
+import io.ktor.http.auth.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.plugins.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.velocity.*
 import org.apache.velocity.exception.ResourceNotFoundException
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -132,21 +127,21 @@ fun Application.webServerModule(testing: Boolean = false) {
         setProperty("resource.loader.file.path", "./templates")
     }
 
-    install(CORS) {
-        this.allowCredentials = true
-
-        allowHeader(HttpHeaders.ContentType)
-        allowHeader(HttpHeaders.Authorization)
-        allowHeader(HttpHeaders.Origin)
-        allowHeader(HttpHeaders.Host)
-        allowHeader(HttpHeaders.AccessControlAllowOrigin)
-
-        allowMethod(HttpMethod.Options)
-        allowMethod(HttpMethod.Post)
-        allowMethod(HttpMethod.Get)
-
-        allowHost(host = "*", schemes = listOf("https"))
-    }
+//    install(CORS) {
+//        this.allowCredentials = true
+//
+//        allowHeader(HttpHeaders.ContentType)
+//        allowHeader(HttpHeaders.Authorization)
+//        allowHeader(HttpHeaders.Origin)
+//        allowHeader(HttpHeaders.Host)
+//        allowHeader(HttpHeaders.AccessControlAllowOrigin)
+//
+//        allowMethod(HttpMethod.Options)
+//        allowMethod(HttpMethod.Post)
+//        allowMethod(HttpMethod.Get)
+//
+//        allowHost(host = "*", schemes = listOf("https"))
+//    }
 
     applicationRoute()
 }

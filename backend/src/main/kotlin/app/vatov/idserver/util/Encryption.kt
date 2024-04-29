@@ -13,11 +13,11 @@ fun String.encrypt(key: SecretKey): String {
     val byteArray: ByteArray = this.toByteArray(StandardCharsets.UTF_8)
     cip.init(Cipher.ENCRYPT_MODE, key)
     val encryptedBytes = cip.doFinal(byteArray)
-    return Base64.getEncoder().encodeToString(encryptedBytes)
+    return Base64.getUrlEncoder().encodeToString(encryptedBytes)
 }
 
 fun String.decrypt(key: SecretKey): String {
-    val byteArray = Base64.getDecoder().decode(this)
+    val byteArray = Base64.getUrlDecoder().decode(this)
     cip.init(Cipher.DECRYPT_MODE, key)
     val plainTextBytes = cip.doFinal(byteArray)
     return plainTextBytes.toString(StandardCharsets.UTF_8)

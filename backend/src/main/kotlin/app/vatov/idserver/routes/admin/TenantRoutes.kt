@@ -14,8 +14,8 @@ import app.vatov.idserver.request.admin.DeleteTenantRequest
 import app.vatov.idserver.request.admin.RotateKeyRequest
 import app.vatov.idserver.response.CurrentKeyResponse
 import app.vatov.idserver.response.ResultResponse
-import app.vatov.idserver.routes.getIntParam
-import app.vatov.idserver.routes.getUserPrincipal
+import app.vatov.idserver.ext.getIntParam
+import app.vatov.idserver.ext.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -26,7 +26,7 @@ import io.ktor.server.routing.route
 
 fun Route.tenantRoutes() {
 
-    route("admin/tenant") {
+    route("tenant") {
 
         post("create") {
 
@@ -47,8 +47,8 @@ fun Route.tenantRoutes() {
             call.respond(tenant)
         }
 
-
         get("list") {
+
             val user = getUserPrincipal()
 
             if (user.roles.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
@@ -60,6 +60,7 @@ fun Route.tenantRoutes() {
         }
 
         post("delete") {
+
             val user = getUserPrincipal()
 
             if (!user.roles.contains(Const.Administration.SUPER_ADMIN_ROLE)) {
@@ -70,56 +71,56 @@ fun Route.tenantRoutes() {
 
             call.respond(ResultResponse(TenantRepository.remove(request.tenantId)))
         }
-    }
 
+        route("keys") {
 
-    route("admin/tenant/keys") {
+            get {
 
-        get {
-            val user = getUserPrincipal()
+                val user = getUserPrincipal()
 
-            val tenantId = getIntParam("tenantId")
+                val tenantId = getIntParam("tenantId")
 
-            user.checkAuthorizedAdmin(tenantId)
+                user.checkAuthorizedAdmin(tenantId)
 
-            val tenant = IDServer.getTenant(tenantId)
+                val tenant = IDServer.getTenant(tenantId)
 
-            call.respond(
-                CurrentKeyResponse(
-                    tenant.getCurrentPublicKey(), tenant.getValidPublicKeys().reversed()
+                call.respond(
+                    CurrentKeyResponse(
+                        tenant.getCurrentPublicKey(), tenant.getValidPublicKeys().reversed()
+                    )
                 )
-            )
-        }
+            }
 
+            post {
 
-        post {
+                val user = getUserPrincipal()
 
-            val user = getUserPrincipal()
+                val request = call.receive<RotateKeyRequest>()
 
-            val request = call.receive<RotateKeyRequest>()
+                user.checkAuthorizedAdmin(request.tenantId)
 
-            user.checkAuthorizedAdmin(request.tenantId)
+                val tenant = IDServer.getTenant(request.tenantId)
+                val newKey = TenantRSAKeyPairRepository.create(tenant)
 
-            val tenant = IDServer.getTenant(request.tenantId)
-            val newKey = TenantRSAKeyPairRepository.create(tenant)
-
-            call.respond(
-                PublicKeyInfo(
-                    newKey.id, newKey.createdAt, newKey.publicKey
+                call.respond(
+                    PublicKeyInfo(
+                        newKey.id, newKey.createdAt, newKey.publicKey
+                    )
                 )
-            )
-        }
+            }
 
-        post("delete") {
-            val user = getUserPrincipal()
+            post("delete") {
 
-            val request = call.receive<DeleteKeyRequest>()
+                val user = getUserPrincipal()
 
-            user.checkAuthorizedAdmin(request.tenantId)
+                val request = call.receive<DeleteKeyRequest>()
 
-            val result = TenantRSAKeyPairRepository.delete(request.tenantId, request.keyId)
+                user.checkAuthorizedAdmin(request.tenantId)
 
-            call.respond(ResultResponse(result))
+                val result = TenantRSAKeyPairRepository.delete(request.tenantId, request.keyId)
+
+                call.respond(ResultResponse(result))
+            }
         }
     }
 }

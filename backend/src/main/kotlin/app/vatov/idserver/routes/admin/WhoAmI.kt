@@ -2,7 +2,7 @@ package app.vatov.idserver.routes.admin
 
 import app.vatov.idserver.Const
 import app.vatov.idserver.repository.UserRepository
-import app.vatov.idserver.routes.getUserPrincipal
+import app.vatov.idserver.ext.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -11,11 +11,11 @@ import io.ktor.server.routing.route
 
 fun Route.adminWhoAmI() {
 
-    route("admin/whoami") {
+    route("whoami") {
 
         get {
 
-            val user = getUserPrincipal() ?: return@get
+            val user = getUserPrincipal()
 
             //TODO: implement me!
             val result = UserRepository.getUserById(Const.Administration.TENANT_ID, user.id)

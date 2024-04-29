@@ -3,8 +3,8 @@ package app.vatov.idserver.routes.user
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserChangePasswordRequest
 import app.vatov.idserver.response.ResultResponse
-import app.vatov.idserver.routes.getTenant
-import app.vatov.idserver.routes.getUserPrincipal
+import app.vatov.idserver.ext.getTenant
+import app.vatov.idserver.ext.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -14,13 +14,13 @@ import io.ktor.server.routing.route
 
 fun Route.userChangePassword() {
 
-    route("user/changePassword") {
+    route("changePassword") {
 
         post {
 
-            val tenant = getTenant() ?: return@post
+            val tenant = getTenant()
 
-            val user = getUserPrincipal() ?: return@post
+            val user = getUserPrincipal()
 
             val request = call.receive<UserChangePasswordRequest>()
 

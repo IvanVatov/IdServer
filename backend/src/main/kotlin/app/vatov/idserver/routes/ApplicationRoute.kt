@@ -14,16 +14,16 @@ import app.vatov.idserver.routes.oauth.login
 import app.vatov.idserver.routes.oauth.openIdConfiguration
 import app.vatov.idserver.routes.oauth.token
 import app.vatov.idserver.routes.user.userChangePassword
-import app.vatov.idserver.routes.user.userRegister
+import app.vatov.idserver.routes.oauth.userRegister
 import app.vatov.idserver.routes.user.userUpdate
-import app.vatov.idserver.routes.user.userWhoAmI
+import app.vatov.idserver.routes.user.userInfo
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.request.host
 import io.ktor.server.response.respond
-import io.ktor.server.routing.routing
+import io.ktor.server.routing.*
 import java.io.File
 
 fun Application.applicationRoute() {
@@ -41,23 +41,31 @@ fun Application.applicationRoute() {
             token()
         }
 
-        authenticate(Const.AuthName.ADMINISTRATION_BASIC) {
-            adminToken()
-        }
-
-        authenticate(Const.AuthName.ADMINISTRATION_BEARER) {
-            adminWhoAmI()
-            tenantRoutes()
-            clientRoutes()
-            serverConfiguration()
-            adminUsers()
-        }
-
         // protected
         authenticate {
-            userWhoAmI()
-            userChangePassword()
-            userUpdate()
+            route("user") {
+                userInfo()
+                userChangePassword()
+                userUpdate()
+            }
+        }
+
+        staticFiles("/static", File("./static"))
+
+        // region Administration
+
+        route("admin") {
+            authenticate(Const.AuthName.ADMINISTRATION_BASIC) {
+                adminToken()
+            }
+
+            authenticate(Const.AuthName.ADMINISTRATION_BEARER) {
+                adminWhoAmI()
+                tenantRoutes()
+                clientRoutes()
+                serverConfiguration()
+                adminUsers()
+            }
         }
 
         staticFiles(
@@ -75,6 +83,6 @@ fun Application.applicationRoute() {
             }
         }
 
-        staticFiles("/static", File("./static"))
+        // endregion
     }
 }

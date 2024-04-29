@@ -2,7 +2,7 @@ package app.vatov.idserver.routes.oauth
 
 import app.vatov.idserver.Const
 import app.vatov.idserver.response.OpenIdConfigurationResponse
-import app.vatov.idserver.routes.getTenant
+import app.vatov.idserver.ext.getTenant
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
@@ -15,9 +15,9 @@ fun Routing.openIdConfiguration() {
 
         get {
 
-            val tenant = getTenant() ?: return@get
+            val tenant = getTenant()
 
-            val config = OpenIdConfigurationResponse.buildWithIssuer(tenant.issuer)
+            val config = OpenIdConfigurationResponse.buildWithTenant(tenant)
 
             call.respond(config)
         }

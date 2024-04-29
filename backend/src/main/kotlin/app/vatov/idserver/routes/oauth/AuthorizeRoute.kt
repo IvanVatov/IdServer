@@ -3,8 +3,8 @@ package app.vatov.idserver.routes.oauth
 import app.vatov.idserver.Const
 import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.AuthorizationInfo
-import app.vatov.idserver.routes.getTenant
-import app.vatov.idserver.routes.readParamOrRespondError
+import app.vatov.idserver.ext.getTenant
+import app.vatov.idserver.ext.readParamOrRespondError
 import io.ktor.http.Parameters
 import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
@@ -20,14 +20,14 @@ fun Routing.authorize() {
 
         get {
 
-            val tenant = getTenant() ?: return@get
+            val tenant = getTenant()
 
             val params = call.parameters
 
             // region RESPONSE TYPE
 
             val responseType =
-                readParamOrRespondError(params, Const.OAuth.RESPONSE_TYPE) ?: return@get
+                readParamOrRespondError(params, Const.OAuth.RESPONSE_TYPE)
 
             if (responseType != "code") {
                 throw IdServerException.BAD_REQUEST
@@ -36,7 +36,7 @@ fun Routing.authorize() {
             // endregion
             // region CLIENT
 
-            val clientId = readParamOrRespondError(params, Const.OAuth.CLIENT_ID) ?: return@get
+            val clientId = readParamOrRespondError(params, Const.OAuth.CLIENT_ID)
 
             val clientPrincipal = tenant.getClient(clientId)
 
@@ -57,7 +57,7 @@ fun Routing.authorize() {
             // endregion
 
             val redirectUrl =
-                readParamOrRespondError(params, Const.OAuth.REDIRECT_URI) ?: return@get
+                readParamOrRespondError(params, Const.OAuth.REDIRECT_URI)
 
 
             if (!clientPrincipal.settings.redirectUris.contains(redirectUrl)) {

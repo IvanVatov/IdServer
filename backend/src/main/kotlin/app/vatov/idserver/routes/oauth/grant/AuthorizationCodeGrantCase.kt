@@ -45,34 +45,29 @@ suspend fun PipelineContext<*, ApplicationCall>.authorizationCodeGrantCase(
 
     val user = UserRepository.getUserById(tenant.id, authorizationInfoWrapper.userId)
 
-    if (user != null) {
+    val token = tenant.makeToken(user, principal, scopes)
 
-        val token = tenant.makeToken(user, principal, scopes)
+    val idToken =
+        tenant.makeIdToken(user, principal, authorizationInfoWrapper.authorizationInfo.nonce)
 
-        val idToken =
-            tenant.makeIdToken(user, principal, authorizationInfoWrapper.authorizationInfo.nonce)
-
-        val refreshToken =
-            if (scopes.contains(Const.OpenIdScope.OFFLINE_ACCESS)) {
-                RefreshTokenRepository.create(
-                    tenant.id,
-                    user.id,
-                    principal.clientId,
-                    scopes,
-                    authorizationInfoWrapper.userAgent
-                )
-            } else null
-
-        call.respond(
-            TokenResponse(
-                accessToken = token,
-                tokenType = Const.OAuth.BEARER,
-                expiresIn = principal.settings.tokenExpiration,
-                refreshToken = refreshToken,
-                idToken = idToken
+    val refreshToken =
+        if (scopes.contains(Const.OpenIdScope.OFFLINE_ACCESS)) {
+            RefreshTokenRepository.create(
+                tenant.id,
+                user.id,
+                principal.clientId,
+                scopes,
+                authorizationInfoWrapper.userAgent
             )
+        } else null
+
+    call.respond(
+        TokenResponse(
+            accessToken = token,
+            tokenType = Const.OAuth.BEARER,
+            expiresIn = principal.settings.tokenExpiration,
+            refreshToken = refreshToken,
+            idToken = idToken
         )
-    } else {
-        throw IdServerException.INVALID_GRAND
-    }
+    )
 }

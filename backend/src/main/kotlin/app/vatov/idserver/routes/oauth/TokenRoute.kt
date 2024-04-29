@@ -3,7 +3,7 @@ package app.vatov.idserver.routes.oauth
 import app.vatov.idserver.Const
 import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.ClientPrincipal
-import app.vatov.idserver.routes.getTenant
+import app.vatov.idserver.ext.getTenant
 import app.vatov.idserver.routes.oauth.grant.authorizationCodeGrantCase
 import app.vatov.idserver.routes.oauth.grant.clientCredentialsGrantCase
 import app.vatov.idserver.routes.oauth.grant.passwordGrantCase
@@ -23,7 +23,7 @@ fun Route.token() {
 
         post {
 
-            val tenant = getTenant() ?: return@post
+            val tenant = getTenant()
 
             val params = call.receiveParameters()
 

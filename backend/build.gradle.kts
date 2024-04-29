@@ -10,7 +10,7 @@ plugins {
 group = "app.vatov.idserver"
 version = "1.0.0"
 
-val targetJVM = "17"
+val targetJVM = "11"
 val ktorVersion = "2.3.9"
 
 kotlin {
@@ -58,7 +58,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
     implementation("io.ktor:ktor-server-velocity:$ktorVersion")
-    implementation("io.ktor:ktor-server-cors:$ktorVersion")
+//    implementation("io.ktor:ktor-server-cors:$ktorVersion")
 
     implementation("com.sun.mail:jakarta.mail:2.0.1")
 
@@ -102,8 +102,8 @@ distributions {
             from("workingDir/static") {
                 into("static")
             }
-            from("workingDir/templates") {
-                into("templates")
+            from("workingDir/templates/default") {
+                into("templates/default")
             }
             from("dist/startScripts")
             from("../frontend/build/web") {

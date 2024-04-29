@@ -5,8 +5,8 @@ import app.vatov.idserver.jsonInstance
 import app.vatov.idserver.model.User
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserUpdateRequest
-import app.vatov.idserver.routes.getTenant
-import app.vatov.idserver.routes.getUserPrincipal
+import app.vatov.idserver.ext.getTenant
+import app.vatov.idserver.ext.getUserPrincipal
 import io.ktor.server.application.call
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -20,13 +20,13 @@ import java.time.Instant
 
 fun Route.userUpdate() {
 
-    route("user/update") {
+    route("update") {
 
         patch {
 
-            val tenant = getTenant() ?: return@patch
+            val tenant = getTenant()
 
-            val userPrincipal = getUserPrincipal() ?: return@patch
+            val userPrincipal = getUserPrincipal()
 
             val requestJsonObject = call.receive<JsonObject>()
 
@@ -44,8 +44,6 @@ fun Route.userUpdate() {
             )
 
             val user = UserRepository.getUserById(tenant.id, userPrincipal.id)
-                ?: throw NullPointerException("User cannot be found")
-
 
             // TODO: Validate fields eg: profile should be url and ect.
 

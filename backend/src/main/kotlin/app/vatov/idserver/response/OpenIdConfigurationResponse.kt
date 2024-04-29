@@ -1,6 +1,7 @@
 package app.vatov.idserver.response
 
 import app.vatov.idserver.Const
+import app.vatov.idserver.model.Tenant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.net.URL
@@ -17,23 +18,28 @@ data class OpenIdConfigurationResponse(
     @SerialName("jwks_uri")
     val jwksUri: String,
     @SerialName("scopes_supported")
-    val scopesSupported: List<String> = listOf(
-        "openid", "profile", "email", "address",
-        "phone", "offline_access"
-    ),
+    val scopesSupported: List<String>,
     @SerialName("response_types_supported")
     val responseTypesSupported: List<String> = listOf("code", "code token")
 ) {
     companion object {
-        fun buildWithIssuer(issuer: String): OpenIdConfigurationResponse {
-            val url = URL(issuer)
+        fun buildWithTenant(tenant: Tenant): OpenIdConfigurationResponse {
+            val url = URL(tenant.issuer)
+
+            val scopeSet = HashSet<String>()
+            tenant.getClients().forEach { client ->
+                client.settings.scope.forEach { scope ->
+                    scopeSet.add(scope)
+                }
+            }
 
             return OpenIdConfigurationResponse(
-                issuer = issuer,
+                issuer = tenant.issuer,
                 authorizationEndpoint = URL(url, Const.Endpoint.AUTHORIZE).toString(),
                 tokenEndpoint = URL(url, Const.Endpoint.TOKEN).toString(),
                 userInfoEndpoint = URL(url, "user/whoami").toString(),
-                jwksUri = URL(url, Const.Endpoint.JWKS_JSON).toString()
+                jwksUri = URL(url, Const.Endpoint.JWKS_JSON).toString(),
+                scopesSupported = scopeSet.toList()
             )
         }
     }
