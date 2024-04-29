@@ -14,7 +14,7 @@ import app.vatov.idserver.routes.oauth.login
 import app.vatov.idserver.routes.oauth.openIdConfiguration
 import app.vatov.idserver.routes.oauth.token
 import app.vatov.idserver.routes.user.userChangePassword
-import app.vatov.idserver.routes.user.userRegister
+import app.vatov.idserver.routes.oauth.userRegister
 import app.vatov.idserver.routes.user.userUpdate
 import app.vatov.idserver.routes.user.userInfo
 import io.ktor.http.HttpStatusCode

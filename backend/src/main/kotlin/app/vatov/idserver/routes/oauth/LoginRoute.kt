@@ -17,6 +17,7 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.ktor.server.util.*
 import io.ktor.server.velocity.VelocityContent
 import java.net.URL
 
@@ -31,13 +32,19 @@ fun Routing.login() {
 
             val params = call.request.queryParameters
 
-            val code = params["code"] ?: ""
+            val code = params.getOrFail("code")
 
-            val nonce = params["nonce"] ?: ""
+            val nonce = params["nonce"]
+
+            val model = mutableMapOf("code" to code)
 
             // we can show what is requested to the user
 
-            call.respond(VelocityContent("${tenant.id}/login.html", mapOf("code" to code, "nonce" to nonce)))
+            if (nonce != null) {
+                model["nonce"] = nonce
+            }
+
+            call.respond(VelocityContent("${tenant.id}/login.html", model))
         }
 
         post {

@@ -1,4 +1,4 @@
-package app.vatov.idserver.routes.user
+package app.vatov.idserver.routes.oauth
 
 import app.vatov.idserver.exception.IdServerException
 import app.vatov.idserver.model.User
@@ -19,7 +19,7 @@ import io.ktor.server.velocity.VelocityContent
 
 fun Routing.userRegister() {
 
-    route("user/register") {
+    route("register") {
 
         get {
             val tenant = getTenant()
