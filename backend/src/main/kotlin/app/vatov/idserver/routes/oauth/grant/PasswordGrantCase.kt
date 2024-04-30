@@ -2,20 +2,24 @@ package app.vatov.idserver.routes.oauth.grant
 
 import app.vatov.idserver.Const
 import app.vatov.idserver.exception.IdServerException
+import app.vatov.idserver.ext.readParamOrRespondError
 import app.vatov.idserver.model.ClientPrincipal
 import app.vatov.idserver.model.GrantType
 import app.vatov.idserver.model.Tenant
 import app.vatov.idserver.repository.RefreshTokenRepository
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.response.TokenResponse
-import app.vatov.idserver.ext.readParamOrRespondError
-import io.ktor.http.Parameters
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
-import io.ktor.server.response.respond
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.util.pipeline.*
 
-suspend fun PipelineContext<*, ApplicationCall>.passwordGrantCase(tenant: Tenant, principal: ClientPrincipal, params: Parameters, userAgent: String ) {
+suspend fun PipelineContext<*, ApplicationCall>.passwordGrantCase(
+    tenant: Tenant,
+    principal: ClientPrincipal,
+    params: Parameters,
+    userAgent: String
+) {
 
     if (!principal.settings.grantTypes.contains(GrantType.PASSWORD)) {
         throw IdServerException.UNSUPPORTED_GRANT_TYPE
@@ -26,7 +30,7 @@ suspend fun PipelineContext<*, ApplicationCall>.passwordGrantCase(tenant: Tenant
     val password =
         readParamOrRespondError(params, Const.OAuth.PASSWORD)
 
-    val scopes = (params[Const.OAuth.SCOPE] ?: Const.EMPTY_STRING).split(' ')
+    val scopes = (params[Const.OAuth.SCOPE] ?: "").split(' ')
 
     scopes.forEach {
         if (!principal.settings.scope.contains(it)) {

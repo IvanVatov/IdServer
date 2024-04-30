@@ -1,25 +1,22 @@
 package app.vatov.idserver.routes.oauth
 
+import app.vatov.idserver.ext.getTenant
 import app.vatov.idserver.model.AuthorizationInfoWrapper
 import app.vatov.idserver.repository.UserRepository
-import app.vatov.idserver.ext.getTenant
 import app.vatov.idserver.util.generateRandomString
 import io.ktor.http.Parameters
 import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
 import io.ktor.http.Url
-import io.ktor.server.application.call
-import io.ktor.server.request.receiveParameters
-import io.ktor.server.request.userAgent
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondRedirect
-import io.ktor.server.routing.Routing
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.route
+import io.ktor.server.application.*
+import io.ktor.server.freemarker.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.server.util.*
-import io.ktor.server.velocity.VelocityContent
+import io.ktor.util.pipeline.*
 import java.net.URL
+import kotlin.collections.set
 
 
 fun Routing.login() {
@@ -30,21 +27,9 @@ fun Routing.login() {
 
             val tenant = getTenant()
 
-            val params = call.request.queryParameters
+            val code = call.request.queryParameters.getOrFail("code")
 
-            val code = params.getOrFail("code")
-
-            val nonce = params["nonce"]
-
-            val model = mutableMapOf("code" to code)
-
-            // we can show what is requested to the user
-
-            if (nonce != null) {
-                model["nonce"] = nonce
-            }
-
-            call.respond(VelocityContent("${tenant.id}/login.html", model))
+            respondLoginFtl(tenantId = tenant.id, code = code)
         }
 
         post {
@@ -52,38 +37,38 @@ fun Routing.login() {
 
             val params = call.receiveParameters()
 
-            val userName = params["account"]
+            val account = params["account"] ?: ""
 
-            val password = params["password"]
+            val password = params["password"] ?: ""
 
-            val authorizationInfoEncrypted = call.request.queryParameters["code"]
+            val code = call.request.queryParameters.getOrFail("code")
 
-            if (userName == null || password == null || authorizationInfoEncrypted == null) {
-                // respond error template
+            if (account.isBlank() || password.isBlank()) {
+                respondLoginFtl(tenant.id, account, code, "Account and password fields cannot be blank")
                 return@post
             }
 
-            val authorizationInfo = tenant.decryptInfoInfo(authorizationInfoEncrypted)
+            val authorizationInfo = tenant.decryptInfoInfo(code)
 
-            val user = UserRepository.getByCredentials(tenant.id, userName, password)
+            val user = UserRepository.getByCredentials(tenant.id, account, password)
 
             if (authorizationInfo == null || user == null) {
-                // respond error template
+                respondLoginFtl(tenant.id, account, code, "Invalid account or password")
+                return@post
+            }
+
+            if (authorizationInfo.createdAt < System.currentTimeMillis() - 600000) { // 10 min
+                respondLoginFtl(tenant.id, account, code, "Expired authorization request")
                 return@post
             }
 
             val client = tenant.getClient(authorizationInfo.clientId)
 
-            val code = generateRandomString()
+            val authorizationCode = generateRandomString()
 
             val userAgent = call.request.userAgent() ?: "Unknown"
 
-            client.codes[code] = AuthorizationInfoWrapper(user.id, userAgent, authorizationInfo)
-
-            if (authorizationInfo.createdAt < System.currentTimeMillis() - 600000 ) { // 10 min
-                // respond error template
-                return@post
-            }
+            client.codes[authorizationCode] = AuthorizationInfoWrapper(user.id, userAgent, authorizationInfo)
 
             val mUrl = Url(authorizationInfo.redirectUrl)
 
@@ -92,13 +77,26 @@ fun Routing.login() {
                 host = URL(authorizationInfo.redirectUrl).host,
                 pathSegments = mUrl.pathSegments,
                 parameters = Parameters.build {
-                    append("code", code)
+                    append("code", authorizationCode)
                     append("state", authorizationInfo.state)
                 }
             ).build()
 
             call.respondRedirect(redirectUrl)
         }
-
     }
+}
+
+private suspend fun PipelineContext<*, ApplicationCall>.respondLoginFtl(
+    tenantId: Int,
+    account: String = "",
+    code: String,
+    error: String = ""
+) {
+    call.respond(
+        FreeMarkerContent(
+            "${tenantId}/login.ftl",
+            mapOf("account" to account, "code" to code, "error" to error)
+        )
+    )
 }

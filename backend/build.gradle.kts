@@ -11,7 +11,7 @@ group = "app.vatov.idserver"
 version = "1.0.0"
 
 val targetJVM = "11"
-val ktorVersion = "2.3.9"
+val ktorVersion = "2.3.10"
 
 kotlin {
     jvmToolchain {
@@ -57,7 +57,7 @@ dependencies {
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
-    implementation("io.ktor:ktor-server-velocity:$ktorVersion")
+    implementation("io.ktor:ktor-server-freemarker:$ktorVersion")
 
     implementation("com.sun.mail:jakarta.mail:2.0.1")
 
