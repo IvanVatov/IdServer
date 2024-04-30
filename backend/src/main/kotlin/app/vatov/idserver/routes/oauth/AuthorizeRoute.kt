@@ -68,11 +68,13 @@ fun Routing.authorize() {
 
             val nonce = params[Const.OpenIdClaim.NONCE] ?: ""
 
+            val register = params["register"]
+
             call.respondRedirect(
                 URLBuilder(
                     protocol = if (tenant.host == "127.0.0.1") URLProtocol.HTTP else URLProtocol.HTTPS,
                     host = tenant.host,
-                    pathSegments = listOf("login"),
+                    pathSegments = if (register != null) listOf("register") else listOf("login"),
                     parameters = Parameters.build {
                         append(
                             "code",
