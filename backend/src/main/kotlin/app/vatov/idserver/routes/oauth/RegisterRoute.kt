@@ -1,110 +1,159 @@
 package app.vatov.idserver.routes.oauth
 
 import app.vatov.idserver.exception.IdServerException
+import app.vatov.idserver.ext.getTenant
+import app.vatov.idserver.model.AuthorizationInfoWrapper
 import app.vatov.idserver.model.User
 import app.vatov.idserver.repository.UserRepository
 import app.vatov.idserver.request.user.UserRegistrationRequest
-import app.vatov.idserver.ext.getTenant
-import io.ktor.http.ContentType
-import io.ktor.server.application.call
-import io.ktor.server.request.contentType
-import io.ktor.server.request.receive
-import io.ktor.server.request.receiveParameters
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Routing
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.route
-import io.ktor.server.velocity.VelocityContent
+import app.vatov.idserver.util.generateRandomString
+import app.vatov.idserver.util.isEmailValid
+import app.vatov.idserver.util.isPasswordValid
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.freemarker.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.util.*
+import io.ktor.util.pipeline.*
+import java.net.URL
+import kotlin.collections.set
 
 fun Routing.userRegister() {
 
-    route("register") {
+    route(Regex("register(.+)?")) {
 
         get {
             val tenant = getTenant()
 
-            call.respond(
-                VelocityContent(
-                    "${tenant.id}/register.html", mapOf(
-                        "account" to "",
-                        "password" to ""
-                    )
-                )
-            )
+            val code = call.request.queryParameters.getOrFail("code")
+
+            respondRegisterFtl(tenantId = tenant.id, code = code)
         }
 
         post {
 
             val tenant = getTenant()
 
-            when (call.request.contentType()) {
-                ContentType.Application.Json -> {
+            val code = call.request.queryParameters.getOrFail("code")
 
-                    val userRegistrationRequest = call.receive<UserRegistrationRequest>()
+            var nameError: String = ""
+            var accountError: String = ""
+            var passwordError: String = ""
 
-                    val user = UserRepository.create(tenant.id, userRegistrationRequest)
+            val params = call.receiveParameters()
 
-                    call.respond(user)
-                }
+            val name = params["name"] ?: ""
 
-                ContentType.Application.FormUrlEncoded -> {
+            if (name.isEmpty()) {
+                nameError ="Invalid name"
+            }
 
-                    val map = HashMap<String, String>()
+            val account = params["account"] ?: ""
 
-                    val params = call.receiveParameters()
+            if (!isEmailValid(account)) {
+                accountError = "Invalid email"
+            }
 
-                    val account = params["account"]
-                    if (account == null) {
-                        map["accountError"] = "Account is required"
+            val password = params["password"] ?: ""
+
+            if (!isPasswordValid(password)) {
+                passwordError = "Password must contain at least one number, one alphabet character minimum 6 characters long"
+            }
+
+            val nickname = params["nickname"] ?: ""
+            val preferredUsername = params["preferredUsername"] ?: ""
+            val picture = params["picture"] ?: ""
+            val email = params["email"] ?: ""
+
+
+            var user: User? = null
+
+            val authorizationInfo = tenant.decryptInfoInfo(code)
+
+            if (authorizationInfo != null && nameError.isBlank() && accountError.isBlank() && passwordError.isBlank()) {
+
+                val userRegistrationRequest = UserRegistrationRequest(
+                    account,
+                    password,
+                    name.ifEmpty { null },
+                    nickname.ifEmpty { null },
+                    preferredUsername.ifEmpty { null },
+                    picture.ifEmpty { null },
+                    email.ifEmpty { null }
+                )
+
+                try {
+                    user = UserRepository.create(tenant.id, userRegistrationRequest)
+                } catch (e: IdServerException) {
+                    accountError = if (e.error == "account_exist") {
+                        "Account already exist"
                     } else {
-                        map["account"] = account
+                        "Something went wrong"
                     }
-
-
-                    val password = params["password"]
-                    if (password == null) {
-                        map["passwordError"] = "Invalid password"
-                    } else {
-                        map["password"] = password
-                    }
-
-                    val name = params["name"]
-                    val nickname = params["nickname"]
-                    val preferredUsername = params["preferredUsername"]
-                    val picture = params["picture"]
-                    val email = params["email"]
-
-
-                    var user: User? = null
-
-                    if (account != null && password != null) {
-                        val userRegistrationRequest = UserRegistrationRequest(
-                            account,
-                            password,
-                            name,
-                            nickname,
-                            preferredUsername,
-                            picture,
-                            email
-                        )
-
-                        try {
-                            user = UserRepository.create(tenant.id, userRegistrationRequest)
-                        } catch (e: IdServerException) {
-                            map["accountError"] = e.message!!
-                        }
-                    }
-
-                    if (user != null) {
-                        // TODO return success response
-                        call.respond(VelocityContent("${tenant.id}/registration_success.html", emptyMap()))
-                        return@post
-                    }
-
-                    call.respond(VelocityContent("${tenant.id}/register.html", map))
                 }
             }
+
+            if (user != null && authorizationInfo != null) {
+
+                val client = tenant.getClient(authorizationInfo.clientId)
+
+                val authorizationCode = generateRandomString()
+
+                val userAgent = call.request.userAgent() ?: "Unknown"
+
+                client.codes[authorizationCode] = AuthorizationInfoWrapper(user.id, userAgent, authorizationInfo)
+
+                val mUrl = Url(authorizationInfo.redirectUrl)
+
+                val redirectUrl = URLBuilder(
+                    protocol = if (tenant.host == "127.0.0.1") URLProtocol.HTTP else URLProtocol.HTTPS,
+                    host = URL(authorizationInfo.redirectUrl).host,
+                    pathSegments = mUrl.pathSegments,
+                    parameters = Parameters.build {
+                        append("code", authorizationCode)
+                        append("state", authorizationInfo.state)
+                    }
+                ).build()
+
+                call.respondRedirect(redirectUrl)
+
+                return@post
+            }
+
+            respondRegisterFtl(
+                tenantId = tenant.id,
+                code = code,
+                account = account,
+                name = name,
+                accountError = accountError,
+                nameError = nameError,
+                passwordError = passwordError
+            )
         }
     }
+}
+
+private suspend fun PipelineContext<*, ApplicationCall>.respondRegisterFtl(
+    tenantId: Int,
+    code: String,
+    account: String = "",
+    name: String = "",
+    accountError: String = "",
+    nameError: String = "",
+    passwordError: String = ""
+) {
+    call.respond(
+        FreeMarkerContent(
+            "${tenantId}/register.ftl", mapOf(
+                "code" to code,
+                "account" to account,
+                "name" to name,
+                "accountError" to accountError,
+                "nameError" to nameError,
+                "passwordError" to passwordError
+            )
+        )
+    )
 }

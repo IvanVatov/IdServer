@@ -2,8 +2,6 @@ package app.vatov.idserver
 
 object Const {
 
-    const val EMPTY_STRING = ""
-
     object Endpoint {
         const val TOKEN = "token"
         const val AUTHORIZE = "authorize"

@@ -6,11 +6,10 @@ import app.vatov.idserver.model.ClientPrincipal
 import app.vatov.idserver.model.GrantType
 import app.vatov.idserver.model.Tenant
 import app.vatov.idserver.response.TokenResponse
-import io.ktor.http.Parameters
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
-import io.ktor.server.response.respond
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.util.pipeline.*
 
 suspend fun PipelineContext<*, ApplicationCall>.clientCredentialsGrantCase(
     tenant: Tenant,
@@ -22,7 +21,7 @@ suspend fun PipelineContext<*, ApplicationCall>.clientCredentialsGrantCase(
         throw IdServerException.UNSUPPORTED_GRANT_TYPE
     }
 
-    val scopes = (params[Const.OAuth.SCOPE] ?: Const.EMPTY_STRING).split(' ')
+    val scopes = (params[Const.OAuth.SCOPE] ?: "").split(' ')
 
     scopes.forEach {
         if (!principal.settings.scope.contains(it)) {

@@ -1,7 +1,6 @@
 package app.vatov.idserver.model
 
 
-import app.vatov.idserver.Const
 import java.security.Key
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
@@ -9,7 +8,7 @@ import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
-import java.util.Base64
+import java.util.*
 
 
 class RSAKeyPair(val publicKey: RSAPublicKey, val privateKey: RSAPrivateKey) {
@@ -74,7 +73,7 @@ private fun String.trimKeyString(): String {
 
     rows.forEach {
         if (!it.contains("---")) {
-            sb.append(it.replace("\\s", Const.EMPTY_STRING))
+            sb.append(it.replace("\\s", ""))
         }
     }
 

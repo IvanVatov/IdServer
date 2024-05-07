@@ -5,19 +5,20 @@ import app.vatov.idserver.ext.respondException
 import app.vatov.idserver.model.UserPrincipal
 import app.vatov.idserver.routes.applicationRoute
 import com.auth0.jwt.JWT
+import freemarker.cache.FileTemplateLoader
 import io.ktor.http.auth.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.freemarker.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import io.ktor.server.velocity.*
-import org.apache.velocity.exception.ResourceNotFoundException
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.net.URL
 
 
@@ -38,7 +39,7 @@ fun Application.webServerModule(testing: Boolean = false) {
                 is BadRequestException ->
                     call.respondException(IdServerException.BAD_REQUEST)
 
-                is ResourceNotFoundException ->
+                is NotFoundException ->
                     call.respondException(IdServerException.NOT_FOUND)
 
                 else -> {
@@ -123,25 +124,9 @@ fun Application.webServerModule(testing: Boolean = false) {
         }
     }
 
-    install(Velocity) {
-        setProperty("resource.loader.file.path", "./templates")
+    install(FreeMarker) {
+        templateLoader = FileTemplateLoader(File("./templates"))
     }
-
-//    install(CORS) {
-//        this.allowCredentials = true
-//
-//        allowHeader(HttpHeaders.ContentType)
-//        allowHeader(HttpHeaders.Authorization)
-//        allowHeader(HttpHeaders.Origin)
-//        allowHeader(HttpHeaders.Host)
-//        allowHeader(HttpHeaders.AccessControlAllowOrigin)
-//
-//        allowMethod(HttpMethod.Options)
-//        allowMethod(HttpMethod.Post)
-//        allowMethod(HttpMethod.Get)
-//
-//        allowHost(host = "*", schemes = listOf("https"))
-//    }
 
     applicationRoute()
 }

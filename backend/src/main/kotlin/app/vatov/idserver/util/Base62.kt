@@ -1,11 +1,10 @@
 package app.vatov.idserver.util
 
-import app.vatov.idserver.Const
 import java.math.BigInteger
 
 fun encodeBase62(num: Int): String {
     var n = num
-    var result = Const.EMPTY_STRING
+    var result = ""
     while (n > 0) {
         result = ALPHA_NUMERIC_CHARS[n % 62] + result
         n /= 62
